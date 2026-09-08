@@ -116,6 +116,9 @@
   .preset-manage { margin-top: 6px; }
   .preset-manage-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 13px; color: #666; border-bottom: 1px solid #f4f4f4; }
 
+  .pending-note { font-size: 12.5px; color: #c0392b; margin-top: 10px; }
+  .link-btn { border: none; background: none; color: #666; font-size: 12.5px; text-decoration: underline; padding: 0; }
+
   .loading, .error-box { text-align: center; padding: 80px 20px; color: #999; font-size: 14px; }
   .error-box button { margin-top: 12px; }
 </style>
@@ -784,7 +787,7 @@ function openDetail(itemId) {
   const item = getItem(itemId);
   if (!item) return;
   ui.detailItemId = itemId;
-  ui.detailDraft = { title: item.title, categoryId: item.categoryId, dates: {}, selected: new Set() };
+  ui.detailDraft = { title: item.title, categoryId: item.categoryId, dates: {}, selected: new Set(), deletePending: new Set() };
   renderDetailModal();
 }
 function renderDetailModal() {
@@ -792,7 +795,8 @@ function renderDetailModal() {
   if (!item) { closeModal(); return; }
   const draft = ui.detailDraft;
   const occs = state.occurrences.filter(o => o.itemId === item.id).sort((a,b)=>a.round-b.round);
-  const rows = occs.map(o => {
+  const visibleOccs = occs.filter(o => !draft.deletePending.has(o.id));
+  const rows = visibleOccs.map(o => {
     const curDate = draft.dates[o.id] ?? o.date;
     const planned = addDays(item.startDate, item.offsets[o.round-1]);
     const diff = daysDiff(planned, curDate);
@@ -814,7 +818,10 @@ function renderDetailModal() {
   }).join("");
   const catOptions = state.categories.map(c => `<option value="${c.id}" ${c.id===draft.categoryId?'selected':''}>${escapeHtml(c.name)}</option>`).join("");
   const deleteSelBtn = draft.selected.size > 0
-    ? `<button class="btn-secondary" style="color:#c0392b;border-color:#eecccc;" onclick="deleteSelectedOccurrences('${item.id}')">선택한 ${draft.selected.size}개 회차 삭제</button>`
+    ? `<button class="btn-secondary" style="color:#c0392b;border-color:#eecccc;" onclick="stageDeleteSelected()">선택한 ${draft.selected.size}개 회차 삭제 표시</button>`
+    : "";
+  const pendingNote = draft.deletePending.size > 0
+    ? `<div class="pending-note">삭제 예정 ${draft.deletePending.size}개 회차 (저장 시 반영) · <button class="link-btn" onclick="undoPendingDelete()">되돌리기</button></div>`
     : "";
   document.getElementById("modalRoot").innerHTML = `
     <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
@@ -829,6 +836,7 @@ function renderDetailModal() {
         </div>
         <div id="hist-rows">${rows}</div>
         ${deleteSelBtn}
+        ${pendingNote}
         <button class="btn-primary" style="margin-top:16px;" onclick="saveDetail('${item.id}')">저장</button>
         <button class="btn-danger" onclick="deleteItemConfirm('${item.id}')">이 학습 항목 삭제</button>
       </div>
@@ -843,39 +851,40 @@ function toggleOccSelect(occId) {
   if (sel.has(occId)) sel.delete(occId); else sel.add(occId);
   renderDetailModal();
 }
+function stageDeleteSelected() {
+  const draft = ui.detailDraft;
+  draft.selected.forEach(id => draft.deletePending.add(id));
+  draft.selected.clear();
+  renderDetailModal();
+}
+function undoPendingDelete() {
+  ui.detailDraft.deletePending.clear();
+  renderDetailModal();
+}
 async function saveDetail(itemId) {
   const item = getItem(itemId);
   const draft = ui.detailDraft;
   if (!draft.title) { alert("제목을 입력해줘."); return; }
-  const dateWrites = Object.entries(draft.dates).map(([id, date]) => ({ collection: "occurrences", id, data: { date } }));
+  if (draft.deletePending.size > 0 && !confirm(`${draft.deletePending.size}개 회차를 삭제하고 저장할까요?`)) return;
+  const dateWrites = Object.entries(draft.dates)
+    .filter(([id]) => !draft.deletePending.has(id))
+    .map(([id, date]) => ({ collection: "occurrences", id, data: { date } }));
+  const deleteIds = Array.from(draft.deletePending);
   closeModal();
   state.loading = true; renderApp();
   try {
     await fsUpdate("items", itemId, { title: draft.title, categoryId: draft.categoryId });
     item.title = draft.title; item.categoryId = draft.categoryId;
     await fsCommitUpdates(dateWrites);
-    Object.entries(draft.dates).forEach(([id, date]) => { const o = state.occurrences.find(x=>x.id===id); if (o) o.date = date; });
+    dateWrites.forEach(w => { const o = state.occurrences.find(x=>x.id===w.id); if (o) o.date = w.data.date; });
+    await fsCommitDeletes(deleteIds.map(id => ({ collection: "occurrences", id })));
+    state.occurrences = state.occurrences.filter(o => !deleteIds.includes(o.id));
     state.loading = false;
     renderApp();
   } catch (e) {
     state.loading = false;
     alert("저장에 실패했어요.");
     renderApp();
-  }
-}
-async function deleteSelectedOccurrences(itemId) {
-  const draft = ui.detailDraft;
-  if (!confirm(`선택한 ${draft.selected.size}개 회차를 삭제할까요?`)) return;
-  const ids = Array.from(draft.selected);
-  const writes = ids.map(id => ({ collection: "occurrences", id }));
-  try {
-    await fsCommitDeletes(writes);
-    state.occurrences = state.occurrences.filter(o => !ids.includes(o.id));
-    draft.selected.clear();
-    renderDetailModal();
-    renderApp();
-  } catch (e) {
-    alert("삭제에 실패했어요.");
   }
 }
 async function toggleCompleteDetail(occId) {
