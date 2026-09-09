@@ -52,8 +52,13 @@
 
   .list { padding: 8px 16px 24px; }
   .cat-group { margin-bottom: 18px; }
-  .cat-title { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500; }
+  .cat-title { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500; cursor: pointer; }
   .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .timeline-date-label { font-size: 12.5px; color: #888; margin: 16px 0 6px; font-weight: 500; }
+  .timeline-today-marker { display: flex; align-items: center; gap: 8px; margin: 18px 0; }
+  .timeline-today-marker .line { flex: 1; height: 1px; background: #ddd; }
+  .timeline-today-marker .label { font-size: 11px; color: #999; }
 
   .row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f0f0f0; }
   .row.selectable { background: #fafafa; margin: 0 -8px; padding: 11px 8px; border-radius: 8px; }
@@ -417,8 +422,13 @@ function renderList() {
   catIds.forEach(catId => {
     const cat = getCategory(catId);
     html += `<div class="cat-group">`;
-    html += `<div class="cat-title"><span class="cat-dot" style="background:${cat ? cat.color : '#ccc'}"></span>${cat ? escapeHtml(cat.name) : '(삭제된 카테고리)'}</div>`;
-    byCat[catId].sort((a,b)=> (a.completed - b.completed) || (a.round-b.round)).forEach(o => {
+    html += `<div class="cat-title" ${cat ? `onclick="openCategoryTimeline('${cat.id}')"` : ''}><span class="cat-dot" style="background:${cat ? cat.color : '#ccc'}"></span>${cat ? escapeHtml(cat.name) : '(삭제된 카테고리)'}</div>`;
+    byCat[catId].sort((a,b)=> {
+      if (a.completed !== b.completed) return a.completed - b.completed;
+      if (a.round !== b.round) return a.round - b.round;
+      const ia = getItem(a.itemId), ib = getItem(b.itemId);
+      return (ia?.startDate || "").localeCompare(ib?.startDate || "");
+    }).forEach(o => {
       const item = getItem(o.itemId);
       const total = totalRounds(o.itemId);
       const selected = state.selectedIds.has(o.id);
@@ -492,8 +502,14 @@ async function toggleComplete(occId) {
   if (!o) return;
   o.completed = !o.completed;
   renderApp();
+  if (ui.timelineCategoryId) renderCategoryTimelineModal();
   try { await fsUpdate("occurrences", occId, { completed: o.completed }); }
-  catch (e) { alert("저장에 실패했어요. 다시 시도해줘."); o.completed = !o.completed; renderApp(); }
+  catch (e) {
+    alert("저장에 실패했어요. 다시 시도해줘.");
+    o.completed = !o.completed;
+    renderApp();
+    if (ui.timelineCategoryId) renderCategoryTimelineModal();
+  }
 }
 
 /* ---------- Select mode ---------- */
@@ -566,6 +582,8 @@ async function applyShift(scope) {
 /* ---------- Modal generic close ---------- */
 function closeModal() {
   document.getElementById("modalRoot").innerHTML = "";
+  ui.timelineCategoryId = null;
+  ui.detailItemId = null;
 }
 
 /* ---------- Add item modal ---------- */
@@ -700,6 +718,56 @@ async function saveAddItem() {
 }
 
 /* ---------- Category modal ---------- */
+/* ---------- Category timeline (all items in a category, chronological) ---------- */
+function openCategoryTimeline(catId) {
+  ui.timelineCategoryId = catId;
+  renderCategoryTimelineModal(true);
+}
+function renderCategoryTimelineModal(scrollToToday) {
+  const cat = getCategory(ui.timelineCategoryId);
+  if (!cat) { closeModal(); return; }
+  const occs = state.occurrences.filter(o => { const it = getItem(o.itemId); return it && it.categoryId === cat.id; });
+  const byDate = {};
+  occs.forEach(o => { (byDate[o.date] = byDate[o.date] || []).push(o); });
+  const dates = Object.keys(byDate).sort();
+  const today = todayStr();
+  let body = "";
+  let todayInserted = false;
+  const todayMarker = `<div class="timeline-today-marker"><span class="line"></span><span class="label">오늘</span><span class="line"></span></div>`;
+  dates.forEach(dateStr => {
+    if (!todayInserted && dateStr >= today) { body += todayMarker; todayInserted = true; }
+    const label = formatDateLabel(dateStr);
+    body += `<div class="timeline-date-label">${dateStr.slice(0,4)}년 ${label.main} (${label.sub.replace('요일','')})</div>`;
+    byDate[dateStr].sort((a,b)=>a.round-b.round).forEach(o => {
+      const item = getItem(o.itemId);
+      if (!item) return;
+      body += `
+        <div class="row" onclick="openDetail('${item.id}')">
+          <span class="chk ${o.completed ? 'done' : ''}" onclick="event.stopPropagation(); toggleComplete('${o.id}')">${o.completed ? checkSvg() : ''}</span>
+          <span class="row-title ${o.completed ? 'done' : ''}">${escapeHtml(item.title)}</span>
+          <span class="row-round">${o.round}/${totalRounds(o.itemId)}</span>
+        </div>
+      `;
+    });
+  });
+  if (!todayInserted) body += todayMarker;
+  if (dates.length === 0) body = `<div class="empty">아직 학습 기록이 없어요.</div>`;
+
+  document.getElementById("modalRoot").innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-sheet">
+        <div class="modal-title">
+          <span style="display:flex;align-items:center;gap:8px;"><span class="cat-dot" style="background:${cat.color}"></span>${escapeHtml(cat.name)}</span>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div id="timeline-body">${body}</div>
+      </div>
+    </div>
+  `;
+  const marker = document.querySelector(".timeline-today-marker");
+  if (marker && scrollToToday) marker.scrollIntoView({ block: "center" });
+}
+
 function openCategoryModal() {
   renderCategoryModal();
 }
