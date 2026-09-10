@@ -2,948 +2,990 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>공부 트래커</title>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>스터디 플래너</title>
+<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj4KPHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSI0MCIgZmlsbD0iI0VFRURFQSIvPgo8bGluZSB4MT0iNDMuMiIgeTE9IjkwIiB4Mj0iMTQwLjQiIHkyPSI5MCIgc3Ryb2tlPSIjQkVCREI5IiBzdHJva2Utd2lkdGg9IjMiLz4KPGNpcmNsZSBjeD0iNDMuMiIgY3k9IjkwIiByPSI2IiBmaWxsPSIjOTY5NjkyIi8+CjxjaXJjbGUgY3g9Ijg2LjQiIGN5PSI5MCIgcj0iOSIgZmlsbD0iIzVGNUY1QyIvPgo8Y2lyY2xlIGN4PSIxNDAuNCIgY3k9IjkwIiByPSIxMyIgZmlsbD0iIzI4MjgyNiIvPgo8L3N2Zz4=" type="image/svg+xml">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="스터디 플래너">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap');
-
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
+  * { box-sizing: border-box; }
   html, body {
-    height: 100%;
-    overscroll-behavior: none;
+    margin: 0; padding: 0;
+    background: #fafafa;
+    color: #111;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, "Malgun Gothic", sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
+  #root { max-width: 480px; margin: 0 auto; min-height: 100vh; background: #fff; position: relative; padding-bottom: 90px; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select { font-family: inherit; }
 
-  body {
-    font-family: 'Inter', 'Noto Sans KR', sans-serif;
-    background: #FAFAF9;
-    color: #1C1C1A;
-    max-width: 480px;
-    margin: 0 auto;
-    position: relative;
-  }
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 8px; }
+  .header h1 { font-size: 17px; font-weight: 600; margin: 0; }
+  .header-btns { display: flex; gap: 8px; }
+  .icon-btn { border: 1px solid #ddd; background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; color: #333; }
+  .icon-btn.active { background: #111; color: #fff; border-color: #111; }
 
-  button, input, select {
-    font-family: inherit;
-  }
+  .datenav { display: flex; align-items: center; justify-content: space-between; padding: 4px 16px 12px; border-bottom: 1px solid #eee; }
+  .datenav .label { font-size: 16px; font-weight: 600; }
+  .datenav .sub { font-size: 12px; color: #999; margin-left: 6px; font-weight: 400; }
+  .navbtns { display: flex; align-items: center; gap: 4px; }
+  .navbtn { width: 30px; height: 30px; border-radius: 6px; border: 1px solid #ddd; background: #fff; font-size: 14px; color: #333; display: flex; align-items: center; justify-content: center; }
+  .today-btn { font-size: 12px; border: 1px solid #ddd; background: #fff; border-radius: 6px; padding: 4px 8px; color: #333; }
 
-  /* ===== 공통 ===== */
-  .screen {
-    min-height: 100vh;
-    padding-bottom: 40px;
-  }
+  .cal-wrap { padding: 12px 16px 6px; }
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .cal-month-label { font-size: 15px; font-weight: 600; color: #111; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .cal-grid-head { margin-bottom: 4px; }
+  .cal-weekday { text-align: center; font-size: 11px; color: #aaa; }
+  .cal-cell { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 3px; padding: 3px 0; min-height: 40px; cursor: pointer; }
+  .cal-num { font-size: 13px; color: #333; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+  .cal-num-today { background: #111; color: #fff; }
+  .cal-num-selected { border: 1px solid #999; }
+  .cal-dot-slot { width: 4px; height: 4px; }
+  .cal-dot { width: 4px; height: 4px; border-radius: 50%; background: #bbb; }
+  .cal-dot-overdue { background: #c0392b; }
+  .cal-check-icon { display: flex; align-items: center; justify-content: center; color: #bbb; width: 10px; height: 10px; }
 
-  .status-bar { height: 24px; }
+  .list { padding: 8px 16px 24px; }
+  .cat-group { margin-bottom: 18px; }
+  .cat-title { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500; cursor: pointer; }
+  .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-  .header {
-    padding: 8px 20px 20px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .timeline-date-label { font-size: 12.5px; color: #888; margin: 16px 0 6px; font-weight: 500; }
+  .timeline-today-marker { display: flex; align-items: center; gap: 8px; margin: 18px 0; }
+  .timeline-today-marker .line { flex: 1; height: 1px; background: #ddd; }
+  .timeline-today-marker .label { font-size: 11px; color: #999; }
 
-  .header-actions { display: flex; gap: 8px; }
+  .row { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid #f0f0f0; }
+  .row.selectable { background: #fafafa; margin: 0 -8px; padding: 11px 8px; border-radius: 8px; }
+  .row.selected { background: #f0f0f0; }
+  .chk { width: 18px; height: 18px; border: 1.5px solid #ccc; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #fff; }
+  .chk.done { background: #111; border-color: #111; }
+  .chk svg { width: 11px; height: 11px; }
+  .sel-chk { width: 18px; height: 18px; flex-shrink: 0; accent-color: #111; }
+  .row-title { flex: 1; font-size: 14.5px; color: #111; }
+  .row-title.done { color: #bbb; text-decoration: line-through; }
+  .row-round { font-size: 11.5px; color: #aaa; flex-shrink: 0; }
 
-  .icon-btn {
-    width: 36px; height: 36px; border-radius: 50%;
-    background: #1C1C1A; color: #FAFAF9;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; border: none; cursor: pointer;
-  }
-  .icon-btn.secondary {
-    background: #fff; color: #1C1C1A; border: 1px solid #E8E7E3;
-  }
+  .empty { text-align: center; color: #999; font-size: 13.5px; padding: 60px 20px; }
 
-  .today-label { padding: 0 20px 8px; font-size: 13px; color: #8A8A85; }
+  .fab { position: fixed; bottom: 24px; left: 0; right: 0; max-width: 480px; margin: 0 auto; display: flex; justify-content: flex-end; padding-right: 16px; pointer-events: none; }
+  .fab-btn { pointer-events: auto; width: 52px; height: 52px; border-radius: 50%; background: #111; color: #fff; border: none; font-size: 26px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
 
-  .empty-state {
-    margin: 60px 20px; text-align: center; color: #ABABA6; font-size: 14px;
-  }
-  .empty-state button {
-    margin-top: 16px; padding: 10px 20px; border-radius: 100px;
-    background: #1C1C1A; color: #fff; border: none; font-size: 14px; font-weight: 600;
-  }
+  .selectbar { position: fixed; bottom: 0; left: 0; right: 0; background: #111; padding: 12px 16px; display: flex; gap: 8px; justify-content: center; max-width: 480px; margin: 0 auto; }
+  .selectbar button { flex: 1; background: transparent; border: 1px solid #444; color: #fff; border-radius: 8px; padding: 10px 0; font-size: 13.5px; }
+  .selectbar button.cancel { border-color: #666; color: #aaa; flex: 0.6; }
 
-  .subject-section { padding: 20px 20px 4px; }
-  .subject-title-row {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px;
-  }
-  .subject-title { font-size: 15px; font-weight: 700; color: #5A5A56; }
-  .subject-actions { display: flex; gap: 10px; }
-  .subject-actions button {
-    background: none; border: none; font-size: 12px; color: #ABABA6; padding: 4px;
-  }
-
-  .cards { display: flex; flex-direction: column; gap: 10px; }
-  .card {
-    border: 1px solid #E8E7E3; border-radius: 16px; padding: 16px;
-    display: flex; align-items: center; gap: 14px; background: #fff;
-    cursor: pointer;
-  }
-  .ring { position: relative; width: 48px; height: 48px; flex-shrink: 0; }
-  .ring svg { transform: rotate(-90deg); }
-  .ring-bg { fill: none; stroke: #EFEFEC; stroke-width: 4.5; }
-  .ring-fg { fill: none; stroke-width: 4.5; stroke-linecap: round; transition: stroke-dashoffset 0.3s; }
-  .ring-pct {
-    position: absolute; inset: 0; display: flex;
-    align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-  }
-  .card-body { flex: 1; min-width: 0; }
-  .card-title { font-size: 15px; font-weight: 600; margin-bottom: 3px; }
-  .card-sub { font-size: 12px; color: #8A8A85; }
-  .card-sub .pct { color: #C4C4BE; }
-  .card-today { text-align: right; flex-shrink: 0; }
-  .card-today .label { font-size: 10px; color: #ABABA6; margin-bottom: 2px; }
-  .card-today .value { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
-  .card-today .value.overdue { color: #C97B63; }
-  .dday { font-size: 10px; color: #ABABA6; margin-top: 2px; }
-
-  .divider { height: 1px; background: #F0EFEB; margin: 4px 20px 0; }
-
-  /* ===== 상세 화면 ===== */
-  .nav {
-    padding: 8px 20px 4px;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .nav-left { display: flex; align-items: center; gap: 12px; }
-  .nav .back { font-size: 22px; color: #8A8A85; background: none; border: none; cursor: pointer; padding: 4px; }
-  .nav .subject { font-size: 17px; font-weight: 700; }
-
-  .hero {
-    padding: 20px 20px 8px;
-    display: flex; flex-direction: column; align-items: center;
-  }
-  .big-ring { position: relative; width: 200px; height: 200px; margin-bottom: 16px; }
-  .big-ring svg { transform: rotate(-90deg); }
-  .big-ring-bg { fill: none; stroke: #EFEFEC; stroke-width: 9; }
-  .big-ring-fg { fill: none; stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 0.3s; }
-  .big-ring-center {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-  }
-  .big-ring-center .today-value { font-size: 36px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
-  .big-ring-center .today-unit { font-size: 12px; color: #8A8A85; margin-top: 6px; text-align: center; }
-
-  .range-note {
-    font-size: 14px; color: #5A5A56; background: #F0EFEB;
-    padding: 6px 14px; border-radius: 100px; margin-bottom: 4px;
-  }
-
-  .stats-row { display: flex; padding: 20px; gap: 8px; }
-  .stat {
-    flex: 1; min-width: 0; border: 1px solid #E8E7E3; border-radius: 14px;
-    padding: 12px 10px; background: #fff;
-  }
-  .stat .label { font-size: 11px; color: #ABABA6; margin-bottom: 4px; white-space: nowrap; }
-  .stat .value {
-    font-size: 15px; font-weight: 700; white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis;
-  }
-  .stat .value.overdue { color: #C97B63; }
-
-  .section-title { padding: 8px 20px 10px; font-size: 13px; font-weight: 600; color: #8A8A85; }
-
-  .log-input {
-    margin: 0 20px 20px; border: 1px solid #E8E7E3; border-radius: 14px;
-    padding: 16px; background: #fff; display: flex; align-items: center; justify-content: space-between;
-  }
-  .log-input .log-label { font-size: 14px; color: #5A5A56; }
-  .stepper { display: flex; align-items: center; gap: 14px; }
-  .stepper button {
-    width: 32px; height: 32px; border-radius: 50%; border: 1px solid #DEDEDA;
-    background: #FAFAF9; font-size: 18px; color: #1C1C1A; cursor: pointer;
-  }
-  .stepper .num { font-size: 18px; font-weight: 700; min-width: 30px; text-align: center; }
-
-  .history { padding: 0 20px 20px; display: flex; flex-direction: column; }
-  .history-row {
-    display: flex; justify-content: space-between; padding: 12px 4px;
-    border-bottom: 1px solid #F0EFEB; font-size: 14px; cursor: pointer;
-  }
-  .history-row .date { color: #8A8A85; }
-  .history-row .done { font-weight: 600; }
-  .history-row .empty { color: #C4C4BE; font-weight: 400; }
-
-  .danger-zone { padding: 20px; }
-  .danger-btn {
-    width: 100%; padding: 14px; border-radius: 14px; border: 1px solid #F0DCD5;
-    background: #fff; color: #C97B63; font-size: 14px; font-weight: 600; cursor: pointer;
-  }
-
-  /* ===== 모달 ===== */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.35);
-    display: flex; align-items: flex-end; justify-content: center;
-    z-index: 100;
-  }
-  .modal-overlay.hidden { display: none; }
-  .modal {
-    background: #FAFAF9; width: 100%; max-width: 480px;
-    border-radius: 24px 24px 0 0; padding: 24px 20px 32px;
-    max-height: 85vh; overflow-y: auto;
-  }
-  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 50; }
+  .modal-sheet { background: #fff; width: 100%; max-width: 480px; border-radius: 16px 16px 0 0; max-height: 88vh; overflow-y: auto; padding: 18px 18px 28px; }
+  .modal-title { font-size: 16px; font-weight: 600; margin: 0 0 16px; display: flex; justify-content: space-between; align-items: center; }
+  .modal-close { border: none; background: none; font-size: 20px; color: #999; padding: 0 4px; }
 
   .field { margin-bottom: 16px; }
-  .field label { display: block; font-size: 13px; color: #8A8A85; margin-bottom: 6px; }
-  .field input, .field select {
-    width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #E0DFDB;
-    font-size: 15px; background: #fff; color: #1C1C1A;
+  .field label { display: block; font-size: 12.5px; color: #777; margin-bottom: 6px; }
+  .field input[type=text], .field input[type=date], .field input[type=number], .field select {
+    width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14.5px; color: #111; background: #fff;
   }
-  .field input:focus, .field select:focus { outline: none; border-color: #6B84A0; }
+  .field input[type=checkbox] { accent-color: #111; margin-right: 6px; }
 
-  .type-toggle { display: flex; gap: 8px; }
-  .type-toggle button {
-    flex: 1; padding: 12px; border-radius: 12px; border: 1px solid #E0DFDB;
-    background: #fff; font-size: 14px; color: #8A8A85; cursor: pointer;
-  }
-  .type-toggle button.active { background: #1C1C1A; color: #fff; border-color: #1C1C1A; }
+  .suggest-list { position: absolute; left: 0; right: 0; top: 100%; background: #fff; border: 1px solid #ddd; border-radius: 8px; margin-top: 4px; max-height: 170px; overflow-y: auto; z-index: 5; }
+  .suggest-item { padding: 9px 12px; font-size: 13.5px; color: #111; border-bottom: 1px solid #f0f0f0; }
+  .suggest-item:last-child { border-bottom: none; }
 
-  .subject-pick { display: flex; flex-direction: column; gap: 8px; }
-  .subject-pick button {
-    padding: 14px; border-radius: 12px; border: 1px solid #E0DFDB; background: #fff;
-    font-size: 15px; text-align: left; cursor: pointer;
-  }
-  .subject-pick button.active { border-color: #1C1C1A; background: #F0EFEB; font-weight: 600; }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; }
+  .swatch.selected { border-color: #111; }
 
-  .modal-actions { display: flex; gap: 10px; margin-top: 24px; }
-  .modal-actions button {
-    flex: 1; padding: 14px; border-radius: 100px; font-size: 15px; font-weight: 600; cursor: pointer; border: none;
-  }
-  .btn-cancel { background: #F0EFEB; color: #5A5A56; }
-  .btn-confirm { background: #1C1C1A; color: #fff; }
-  .btn-confirm:disabled { background: #D8D7D2; }
+  .btn-primary { width: 100%; background: #111; color: #fff; border: none; border-radius: 8px; padding: 13px 0; font-size: 15px; font-weight: 500; }
+  .btn-secondary { width: 100%; background: #fff; color: #111; border: 1px solid #ddd; border-radius: 8px; padding: 13px 0; font-size: 15px; margin-top: 8px; }
+  .btn-danger { width: 100%; background: #fff; color: #c0392b; border: 1px solid #eecccc; border-radius: 8px; padding: 12px 0; font-size: 14px; margin-top: 20px; }
 
-  .row-2 { display: flex; gap: 10px; }
-  .row-2 .field { flex: 1; }
+  .catlist-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #f0f0f0; }
+  .catlist-row .name { flex: 1; font-size: 14.5px; }
+  .arrow-btn { border: none; background: none; color: #999; font-size: 14px; padding: 2px 4px; }
+  .x-btn { border: none; background: none; color: #ccc; font-size: 16px; padding: 2px 6px; }
 
-  .hint { font-size: 12px; color: #ABABA6; margin-top: -8px; margin-bottom: 16px; }
+  .hist-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+  .hist-round { font-size: 12.5px; color: #999; min-width: 42px; }
+  .hist-date { flex: 1; }
+  .hist-date input[type=date] { width: 100%; padding: 7px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+  .hist-planned { font-size: 11px; color: #aaa; margin-top: 4px; }
+
+  .title-input { border: none; background: transparent; font-size: 16px; font-weight: 600; padding: 4px 0; flex: 1; color: #111; }
+  .title-input:focus { outline: none; border-bottom: 1px solid #ddd; }
+
+  .preset-manage { margin-top: 6px; }
+  .preset-manage-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 13px; color: #666; border-bottom: 1px solid #f4f4f4; }
+
+  .pending-note { font-size: 12.5px; color: #c0392b; margin-top: 10px; }
+  .link-btn { border: none; background: none; color: #666; font-size: 12.5px; text-decoration: underline; padding: 0; }
+
+  .loading, .error-box { text-align: center; padding: 80px 20px; color: #999; font-size: 14px; }
+  .error-box button { margin-top: 12px; }
 </style>
 </head>
 <body>
-
-<div id="app"></div>
-
-<!-- ===== 모달들 ===== -->
-<div class="modal-overlay hidden" id="modal-add-subject">
-  <div class="modal">
-    <div class="modal-title">과목 추가</div>
-    <div class="field">
-      <label>과목명</label>
-      <input type="text" id="input-subject-name" placeholder="예: 한국사">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('modal-add-subject')">취소</button>
-      <button class="btn-confirm" onclick="submitAddSubject()">추가</button>
-    </div>
-  </div>
+<div id="root">
+  <div id="app"></div>
 </div>
-
-<div class="modal-overlay hidden" id="modal-add-item">
-  <div class="modal">
-    <div class="modal-title">항목 추가</div>
-
-    <div class="field">
-      <label>과목</label>
-      <div class="subject-pick" id="subject-pick-list"></div>
-    </div>
-
-    <div class="field">
-      <label>항목명</label>
-      <input type="text" id="input-item-name" placeholder="예: 인강, 기출문제집">
-    </div>
-
-    <div class="field">
-      <label>유형</label>
-      <div class="type-toggle">
-        <button id="type-count" class="active" onclick="setItemType('count')">수량형</button>
-        <button id="type-chapter" onclick="setItemType('chapter')">목차형</button>
-      </div>
-    </div>
-    <div class="hint" id="type-hint">순서 없는 총량 (예: 단어 317개)</div>
-
-    <div class="field">
-      <label id="target-label">총 목표량</label>
-      <input type="number" id="input-target" placeholder="예: 70" min="1">
-    </div>
-
-    <div class="row-2">
-      <div class="field">
-        <label>시작일</label>
-        <input type="date" id="input-start-date">
-      </div>
-      <div class="field">
-        <label>목표일</label>
-        <input type="date" id="input-end-date">
-      </div>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('modal-add-item')">취소</button>
-      <button class="btn-confirm" onclick="submitAddItem()">추가</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="modal-edit-log">
-  <div class="modal">
-    <div class="modal-title" id="edit-log-title">기록 수정</div>
-    <div class="field">
-      <label id="edit-log-label">그 날짜까지 완료한 양</label>
-      <input type="number" id="input-edit-log-value" min="0">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('modal-edit-log')">취소</button>
-      <button class="btn-confirm" onclick="submitEditLog()">저장</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="modal-confirm-delete">
-  <div class="modal">
-    <div class="modal-title" id="confirm-delete-text">삭제하시겠습니까?</div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeModal('modal-confirm-delete')">취소</button>
-      <button class="btn-confirm" style="background:#C97B63" onclick="confirmDelete()">삭제</button>
-    </div>
-  </div>
-</div>
+<div id="modalRoot"></div>
 
 <script>
-/* =========================================================
-   상태 (일단 메모리 내 상태로 관리, 이후 Firebase 연결 예정)
-   ========================================================= */
+/* ---------- Firebase / Firestore REST config ---------- */
+const PROJECT_ID = "study-planner-5f4b3";
+const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
-const COLORS = ['#6B84A0', '#B08968', '#7A8B7A', '#C97B63', '#8B7BA0'];
+function toValue(v) {
+  if (v === null || v === undefined) return { nullValue: null };
+  if (typeof v === "string") return { stringValue: v };
+  if (typeof v === "boolean") return { booleanValue: v };
+  if (typeof v === "number") return { integerValue: String(Math.round(v)) };
+  if (Array.isArray(v)) return { arrayValue: { values: v.map(toValue) } };
+  throw new Error("unsupported value type");
+}
+function fromValue(fv) {
+  if (!fv) return null;
+  if ("stringValue" in fv) return fv.stringValue;
+  if ("booleanValue" in fv) return fv.booleanValue;
+  if ("integerValue" in fv) return parseInt(fv.integerValue, 10);
+  if ("doubleValue" in fv) return fv.doubleValue;
+  if ("arrayValue" in fv) return (fv.arrayValue.values || []).map(fromValue);
+  if ("nullValue" in fv) return null;
+  return null;
+}
+function toFields(obj) {
+  const fields = {};
+  for (const k in obj) fields[k] = toValue(obj[k]);
+  return fields;
+}
+function fromDoc(doc) {
+  const id = doc.name.split("/").pop();
+  const data = {};
+  for (const k in doc.fields || {}) data[k] = fromValue(doc.fields[k]);
+  return { id, ...data };
+}
+
+async function fsList(collection) {
+  let docs = [];
+  let pageToken;
+  do {
+    const url = new URL(`${BASE}/${collection}`);
+    url.searchParams.set("pageSize", "300");
+    if (pageToken) url.searchParams.set("pageToken", pageToken);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("load failed: " + collection);
+    const data = await res.json();
+    if (data.documents) docs = docs.concat(data.documents.map(fromDoc));
+    pageToken = data.nextPageToken;
+  } while (pageToken);
+  return docs;
+}
+async function fsAdd(collection, obj) {
+  const res = await fetch(`${BASE}/${collection}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fields: toFields(obj) })
+  });
+  if (!res.ok) throw new Error("add failed: " + collection);
+  const data = await res.json();
+  return fromDoc(data);
+}
+async function fsUpdate(collection, id, obj) {
+  const mask = Object.keys(obj).map(k => `updateMask.fieldPaths=${encodeURIComponent(k)}`).join("&");
+  const res = await fetch(`${BASE}/${collection}/${id}?${mask}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ fields: toFields(obj) })
+  });
+  if (!res.ok) throw new Error("update failed: " + collection);
+}
+async function fsCommitUpdates(items) {
+  if (!items.length) return;
+  const writes = items.map(it => ({
+    update: {
+      name: `projects/${PROJECT_ID}/databases/(default)/documents/${it.collection}/${it.id}`,
+      fields: toFields(it.data)
+    },
+    updateMask: { fieldPaths: Object.keys(it.data) }
+  }));
+  const res = await fetch(`${BASE}:commit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ writes })
+  });
+  if (!res.ok) throw new Error("commit update failed");
+}
+async function fsCommitDeletes(items) {
+  if (!items.length) return;
+  const writes = items.map(it => ({
+    delete: `projects/${PROJECT_ID}/databases/(default)/documents/${it.collection}/${it.id}`
+  }));
+  const res = await fetch(`${BASE}:commit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ writes })
+  });
+  if (!res.ok) throw new Error("commit delete failed");
+}
+
+/* ---------- Date utils ---------- */
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function addDays(dateStr, n) {
+  const [y,m,d] = dateStr.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate() + n);
+  return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth()+1).padStart(2,"0")}-${String(dt.getUTCDate()).padStart(2,"0")}`;
+}
+function formatMD(dateStr) {
+  const [y,m,d] = dateStr.split("-").map(Number);
+  return `${m}/${d}`;
+}
+function daysDiff(dateA, dateB) {
+  const [ay,am,ad] = dateA.split("-").map(Number);
+  const [by,bm,bd] = dateB.split("-").map(Number);
+  const ta = Date.UTC(ay,am-1,ad), tb = Date.UTC(by,bm-1,bd);
+  return Math.round((tb-ta)/86400000);
+}
+function formatDateLabel(dateStr) {
+  const [y,m,d] = dateStr.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  const days = ["일","월","화","수","목","금","토"];
+  return { main: `${m}월 ${d}일`, sub: days[dt.getDay()] + "요일" };
+}
+
+/* ---------- State ---------- */
+const CATEGORY_COLORS = ["#111111","#8a6a3a","#3a6b8a","#6a5a8a","#7a3a3a","#3a7a5a","#888888","#a05a2c"];
 
 let state = {
-  subjects: [],   // { id, name }
-  items: [],      // { id, subjectId, name, type, target, startDate, endDate, logs: {date: cumulativeValue} }
+  categories: [],
+  presets: [],
+  items: [],
+  occurrences: [],
+  selectedDate: todayStr(),
+  calendarMonth: todayStr().slice(0,7),
+  selectMode: false,
+  selectedIds: new Set(),
+  loading: true,
+  error: null
 };
+let ui = { newCategoryColor: CATEGORY_COLORS[0] };
 
-let nav = { screen: 'list', itemId: null };
-let pendingItemType = 'count';
-let pendingSubjectIdForItem = null;
-let pendingDeleteAction = null;
-let editingLogDate = null;
-let editingLogItemId = null;
-
-/* ---------- 시드 데이터 (목업과 동일한 예시) ---------- */
-function seed() {
-  const s1 = uid(); const s2 = uid(); const s3 = uid();
-  state.subjects = [
-    { id: s1, name: '한국사' },
-    { id: s2, name: '영단어' },
-    { id: s3, name: '수학' },
-  ];
-  state.items = [
-    {
-      id: uid(), subjectId: s1, name: '인강', type: 'chapter', target: 70,
-      startDate: '2026-09-01', endDate: '2026-10-04',
-      logs: { '2026-09-07': 35, '2026-09-09': 38 }, color: COLORS[0]
-    },
-    {
-      id: uid(), subjectId: s1, name: '기출문제집', type: 'count', target: 200,
-      startDate: '2026-09-01', endDate: '2026-10-04',
-      logs: { '2026-09-09': 80 }, color: COLORS[1]
-    },
-    {
-      id: uid(), subjectId: s2, name: '단어 암기', type: 'count', target: 317,
-      startDate: '2026-09-01', endDate: '2026-09-19',
-      logs: { '2026-09-09': 210 }, color: COLORS[0]
-    },
-    {
-      id: uid(), subjectId: s3, name: '개념원리', type: 'chapter', target: 45,
-      startDate: '2026-09-10', endDate: '2026-10-10',
-      logs: {}, color: COLORS[0]
-    },
-  ];
-}
-
-function uid() { return Math.random().toString(36).slice(2, 10); }
-
-/* =========================================================
-   날짜 / 계산 로직
-   ========================================================= */
-
-function todayStr() {
-  return toDateStr(new Date());
-}
-
-function toDateStr(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function daysBetween(startStr, endStr) {
-  const start = new Date(startStr + 'T00:00:00');
-  const end = new Date(endStr + 'T00:00:00');
-  return Math.round((end - start) / 86400000);
-}
-
-function addDaysStr(dateStr, n) {
-  const d = new Date(dateStr + 'T00:00:00');
-  d.setDate(d.getDate() + n);
-  return toDateStr(d);
-}
-
-function getCumulativeAt(logs, dateStr) {
-  const dates = Object.keys(logs).filter(d => d <= dateStr).sort();
-  if (dates.length === 0) return 0;
-  return logs[dates[dates.length - 1]];
-}
-
-function calcTodayGoal(item, today) {
-  const yesterday = addDaysStr(today, -1);
-  const cumulativeYesterday = getCumulativeAt(item.logs, yesterday);
-  const remaining = Math.max(0, item.target - cumulativeYesterday);
-
-  let daysLeft = daysBetween(today, item.endDate) + 1;
-  const isOverdue = daysLeft < 1;
-  if (daysLeft < 1) daysLeft = 1;
-
-  const rawGoal = remaining / daysLeft;
-  const todayGoal = Math.ceil(rawGoal);
-
-  return { todayGoal, cumulativeYesterday, remaining, daysLeft, isOverdue };
-}
-
-function calcOverallProgress(item, today) {
-  const cum = getCumulativeAt(item.logs, today);
-  const pct = item.target > 0 ? Math.round((cum / item.target) * 100) : 0;
-  return { cumulative: cum, pct: Math.min(pct, 100) };
-}
-
-function calcTodayProgressRing(item, today) {
-  const goalInfo = calcTodayGoal(item, today);
-  const cumToday = getCumulativeAt(item.logs, today);
-  const cumYesterday = goalInfo.cumulativeYesterday;
-  const doneToday = Math.max(0, cumToday - cumYesterday);
-  let pct;
-  if (goalInfo.todayGoal <= 0) {
-    pct = cumToday >= item.target ? 100 : 0;
-  } else {
-    pct = Math.round((doneToday / goalInfo.todayGoal) * 100);
+/* ---------- Data load ---------- */
+async function loadAll() {
+  state.loading = true; state.error = null;
+  renderApp();
+  try {
+    const [categories, presets, items, occurrences] = await Promise.all([
+      fsList("categories"), fsList("presets"), fsList("items"), fsList("occurrences")
+    ]);
+    state.categories = categories.sort((a,b)=>(a.order??0)-(b.order??0));
+    state.presets = presets;
+    state.items = items;
+    state.occurrences = occurrences;
+    state.loading = false;
+  } catch (e) {
+    state.loading = false;
+    state.error = e.message || "불러오기에 실패했어요.";
   }
-  return Math.min(pct, 100);
+  renderApp();
 }
 
-function ddayLabel(endDate, today) {
-  const diff = daysBetween(today, endDate);
-  if (diff > 0) return `D-${diff}`;
-  if (diff === 0) return 'D-day';
-  return `D+${Math.abs(diff)}`;
+/* ---------- Helpers ---------- */
+function getCategory(id) { return state.categories.find(c => c.id === id); }
+function getItem(id) { return state.items.find(i => i.id === id); }
+function occurrencesForDate(dateStr) {
+  return state.occurrences.filter(o => o.date === dateStr);
+}
+function totalRounds(itemId) {
+  const item = getItem(itemId);
+  return item ? item.offsets.length : 0;
 }
 
-/* =========================================================
-   렌더링
-   ========================================================= */
-
-function render() {
-  const app = document.getElementById('app');
-  if (nav.screen === 'list') {
-    app.innerHTML = renderListScreen();
-  } else if (nav.screen === 'detail') {
-    app.innerHTML = renderDetailScreen(nav.itemId);
+/* ---------- Render: main app ---------- */
+function renderApp() {
+  const app = document.getElementById("app");
+  if (state.loading) {
+    app.innerHTML = `<div class="loading">불러오는 중...</div>`;
+    return;
   }
+  if (state.error) {
+    app.innerHTML = `<div class="error-box">${escapeHtml(state.error)}<br><button class="btn-secondary" onclick="loadAll()">다시 시도</button></div>`;
+    return;
+  }
+  app.innerHTML = `
+    ${renderHeader()}
+    ${renderCalendar()}
+    ${renderSelectedBar()}
+    ${renderList()}
+  `;
+  renderFabAndBar();
 }
 
-function renderListScreen() {
+function renderHeader() {
+  return `
+    <div class="header">
+      <h1>스터디 플래너</h1>
+      <div class="header-btns">
+        <button class="icon-btn" onclick="openCategoryModal()">카테고리</button>
+        <button class="icon-btn ${state.selectMode ? 'active' : ''}" onclick="toggleSelectMode()">${state.selectMode ? '선택 취소' : '선택'}</button>
+      </div>
+    </div>
+  `;
+}
+
+function dayStatus(dateStr) {
+  const occs = occurrencesForDate(dateStr);
+  if (occs.length === 0) return "none";
+  if (occs.every(o => o.completed)) return "done";
+  if (dateStr < todayStr()) return "overdue";
+  return "pending";
+}
+
+function renderCalendar() {
+  const [cy, cm] = state.calendarMonth.split("-").map(Number);
+  const numDays = new Date(cy, cm, 0).getDate();
+  const firstWd = new Date(cy, cm-1, 1).getDay();
   const today = todayStr();
+  const weekdayLabels = ["일","월","화","수","목","금","토"].map(w => `<span class="cal-weekday">${w}</span>`).join("");
 
-  if (state.items.length === 0 && state.subjects.length === 0) {
-    return `
-      <div class="screen">
-        <div class="status-bar"></div>
-        <div class="header">
-          <h1>공부 트래커</h1>
-          <div class="header-actions">
-            <button class="icon-btn secondary" onclick="openAddSubjectModal()">+ 과목</button>
-          </div>
-        </div>
-        <div class="empty-state">
-          아직 과목이 없어요.<br>먼저 과목을 추가해보세요.
-          <br>
-          <button onclick="openAddSubjectModal()">과목 추가</button>
-        </div>
+  let cells = "";
+  for (let i = 0; i < firstWd; i++) cells += `<div class="cal-cell"></div>`;
+  for (let d = 1; d <= numDays; d++) {
+    const dateStr = `${cy}-${String(cm).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    const isToday = dateStr === today;
+    const isSelected = dateStr === state.selectedDate;
+    const numClass = isToday ? "cal-num-today" : (isSelected ? "cal-num-selected" : "");
+    const status = dayStatus(dateStr);
+    let indicator = `<span class="cal-dot-slot"></span>`;
+    if (status === "pending") indicator = `<span class="cal-dot"></span>`;
+    else if (status === "overdue") indicator = `<span class="cal-dot cal-dot-overdue"></span>`;
+    else if (status === "done") indicator = `<i class="cal-check-icon">${checkSvgSmall()}</i>`;
+    cells += `
+      <div class="cal-cell" onclick="selectDate('${dateStr}')">
+        <span class="cal-num ${numClass}">${d}</span>
+        ${indicator}
       </div>
     `;
   }
 
-  let sectionsHtml = '';
-  state.subjects.forEach(subj => {
-    const items = state.items.filter(i => i.subjectId === subj.id);
-    let cardsHtml = '';
-    if (items.length === 0) {
-      cardsHtml = `<div style="font-size:13px;color:#C4C4BE;padding:4px 0 8px;">항목이 없어요</div>`;
-    } else {
-      items.forEach((item) => {
-        cardsHtml += renderItemCard(item, today);
-      });
-    }
-    sectionsHtml += `
-      <div class="subject-section">
-        <div class="subject-title-row">
-          <div class="subject-title">${escapeHtml(subj.name)}</div>
-          <div class="subject-actions">
-            <button onclick="openDeleteSubjectConfirm('${subj.id}')">삭제</button>
-          </div>
+  return `
+    <div class="cal-wrap">
+      <div class="cal-header">
+        <span class="cal-month-label">${cy}년 ${cm}월</span>
+        <div class="navbtns">
+          <button class="navbtn" onclick="shiftMonth(-1)">‹</button>
+          <button class="navbtn" onclick="shiftMonth(1)">›</button>
         </div>
-        <div class="cards">${cardsHtml}</div>
       </div>
-      <div class="divider"></div>
-    `;
+      <div class="cal-grid cal-grid-head">${weekdayLabels}</div>
+      <div class="cal-grid">${cells}</div>
+    </div>
+  `;
+}
+
+function renderSelectedBar() {
+  const label = formatDateLabel(state.selectedDate);
+  const today = todayStr();
+  return `
+    <div class="datenav">
+      <div><span class="label">${label.main}</span><span class="sub">${label.sub}</span></div>
+      ${state.selectedDate !== today ? `<button class="today-btn" onclick="goToday()">오늘</button>` : ""}
+    </div>
+  `;
+}
+
+function renderList() {
+  const occs = occurrencesForDate(state.selectedDate);
+  if (occs.length === 0) {
+    return `<div class="empty">이 날은 예정된 학습이 없어요.</div>`;
+  }
+  const byCat = {};
+  occs.forEach(o => {
+    const item = getItem(o.itemId);
+    if (!item) return;
+    const catId = item.categoryId || "__none__";
+    if (!byCat[catId]) byCat[catId] = [];
+    byCat[catId].push(o);
   });
-
-  return `
-    <div class="screen">
-      <div class="status-bar"></div>
-      <div class="header">
-        <h1>공부 트래커</h1>
-        <div class="header-actions">
-          <button class="icon-btn secondary" onclick="openAddSubjectModal()" title="과목 추가" style="font-size:13px;width:auto;padding:0 14px;">+ 과목</button>
-          <button class="icon-btn" onclick="openAddItemModal()" title="항목 추가" style="font-size:13px;width:auto;padding:0 14px;">+ 항목</button>
-        </div>
-      </div>
-      <div class="today-label">${formatTodayLabel(today)}</div>
-      ${sectionsHtml}
-    </div>
-  `;
-}
-
-function renderItemCard(item, today) {
-  const color = item.color || COLORS[0];
-  const overall = calcOverallProgress(item, today);
-  const goalInfo = calcTodayGoal(item, today);
-  const ringPct = calcTodayProgressRing(item, today);
-
-  const r = 20, circumference = 2 * Math.PI * r;
-  const offset = circumference - (ringPct / 100) * circumference;
-
-  const unit = item.type === 'chapter' ? '강' : '개';
-  let todayValueText;
-  if (overall.cumulative >= item.target) {
-    todayValueText = '완료';
-  } else {
-    todayValueText = `${goalInfo.todayGoal}${unit}`;
-  }
-
-  const dday = ddayLabel(item.endDate, today);
-  const isOverdue = dday.startsWith('D+');
-
-  return `
-    <div class="card" onclick="openDetail('${item.id}')">
-      <div class="ring">
-        <svg width="48" height="48">
-          <circle class="ring-bg" cx="24" cy="24" r="${r}"></circle>
-          <circle class="ring-fg" cx="24" cy="24" r="${r}" stroke="${color}"
-            stroke-dasharray="${circumference.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"></circle>
-        </svg>
-        <div class="ring-pct">${ringPct}%</div>
-      </div>
-      <div class="card-body">
-        <div class="card-title">${escapeHtml(item.name)}</div>
-        <div class="card-sub">${overall.cumulative}${unit} / ${item.target}${unit} <span class="pct">· ${overall.pct}%</span></div>
-      </div>
-      <div class="card-today">
-        <div class="label">오늘</div>
-        <div class="value ${isOverdue ? 'overdue' : ''}">${todayValueText}</div>
-        <div class="dday">${dday}</div>
-      </div>
-    </div>
-  `;
-}
-
-function renderDetailScreen(itemId) {
-  const item = state.items.find(i => i.id === itemId);
-  if (!item) { nav.screen = 'list'; return renderListScreen(); }
-
-  const subj = state.subjects.find(s => s.id === item.subjectId);
-  const today = todayStr();
-  const overall = calcOverallProgress(item, today);
-  const goalInfo = calcTodayGoal(item, today);
-  const ringPct = calcTodayProgressRing(item, today);
-  const unit = item.type === 'chapter' ? '강' : '개';
-
-  const r = 88, circumference = 2 * Math.PI * r;
-  const offset = circumference - (ringPct / 100) * circumference;
-  const itemColor = item.color || COLORS[0];
-
-  const isDone = overall.cumulative >= item.target;
-  let centerValue, centerUnit;
-  if (isDone) {
-    centerValue = '완료';
-    centerUnit = `총 ${item.target}${unit} 달성`;
-  } else {
-    centerValue = `${goalInfo.todayGoal}${unit}`;
-    centerUnit = `오늘 목표 · ${ringPct}% 완료`;
-  }
-
-  let rangeNote = '';
-  if (!isDone && item.type === 'chapter') {
-    const from = goalInfo.cumulativeYesterday + 1;
-    const to = goalInfo.cumulativeYesterday + goalInfo.todayGoal;
-    rangeNote = `<div class="range-note">${from}강 ~ ${to}강</div>`;
-  }
-
-  const dday = ddayLabel(item.endDate, today);
-  const isOverdue = dday.startsWith('D+');
-
-  const todayLogValue = item.logs[today] !== undefined ? item.logs[today] : goalInfo.cumulativeYesterday;
-
-  const logDates = Object.keys(item.logs).sort().reverse().slice(0, 10);
-  let historyHtml = '';
-  if (logDates.length === 0) {
-    historyHtml = `<div style="padding:20px 4px;color:#C4C4BE;font-size:13px;">아직 기록이 없어요</div>`;
-  } else {
-    logDates.forEach((date) => {
-      const cum = item.logs[date];
-      const prevDates = Object.keys(item.logs).filter(d => d < date).sort();
-      const prevCum = prevDates.length > 0 ? item.logs[prevDates[prevDates.length - 1]] : 0;
-      let rangeText;
-      if (item.type === 'chapter') {
-        rangeText = prevCum + 1 <= cum ? `${prevCum + 1} ~ ${cum}${unit}` : `${cum}${unit}`;
-      } else {
-        const diff = cum - prevCum;
-        rangeText = `+${diff}${unit} (누적 ${cum}${unit})`;
-      }
-      historyHtml += `
-        <div class="history-row" onclick="openEditLog('${item.id}', '${date}')">
-          <span class="date">${formatDateShort(date)}</span>
-          <span class="done">${rangeText}</span>
+  const catIds = Object.keys(byCat).sort((a,b) => {
+    const ca = getCategory(a), cb = getCategory(b);
+    return (ca?.order ?? 999) - (cb?.order ?? 999);
+  });
+  let html = `<div class="list">`;
+  catIds.forEach(catId => {
+    const cat = getCategory(catId);
+    html += `<div class="cat-group">`;
+    html += `<div class="cat-title" ${cat ? `onclick="openCategoryTimeline('${cat.id}')"` : ''}><span class="cat-dot" style="background:${cat ? cat.color : '#ccc'}"></span>${cat ? escapeHtml(cat.name) : '(삭제된 카테고리)'}</div>`;
+    byCat[catId].sort((a,b)=> {
+      if (a.completed !== b.completed) return a.completed - b.completed;
+      if (a.round !== b.round) return a.round - b.round;
+      const ia = getItem(a.itemId), ib = getItem(b.itemId);
+      return (ia?.startDate || "").localeCompare(ib?.startDate || "");
+    }).forEach(o => {
+      const item = getItem(o.itemId);
+      const total = totalRounds(o.itemId);
+      const selected = state.selectedIds.has(o.id);
+      html += `
+        <div class="row ${state.selectMode ? 'selectable' : ''} ${selected ? 'selected' : ''}" onclick="${state.selectMode ? `toggleSelect('${o.id}')` : `openDetail('${item.id}')`}">
+          ${state.selectMode
+            ? `<input type="checkbox" class="sel-chk" ${selected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelect('${o.id}')">`
+            : `<span class="chk ${o.completed ? 'done' : ''}" onclick="event.stopPropagation(); toggleComplete('${o.id}')">${o.completed ? checkSvg() : ''}</span>`
+          }
+          <span class="row-title ${o.completed ? 'done' : ''}">${escapeHtml(item.title)}</span>
+          <span class="row-round">${o.round}/${total}</span>
         </div>
       `;
     });
+    html += `</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function checkSvg() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+}
+
+function renderFabAndBar() {
+  let extra = "";
+  if (state.selectMode && state.selectedIds.size > 0) {
+    extra = `
+      <div class="selectbar">
+        <button class="cancel" onclick="toggleSelectMode()">취소</button>
+        <button onclick="openShiftModal(-1)">당기기</button>
+        <button onclick="openShiftModal(1)">미루기</button>
+      </div>
+    `;
+  } else if (!state.selectMode) {
+    extra = `
+      <div class="fab"><button class="fab-btn" onclick="openAddItem()">+</button></div>
+    `;
   }
+  document.getElementById("root").querySelectorAll(".fab,.selectbar").forEach(el => el.remove());
+  document.getElementById("root").insertAdjacentHTML("beforeend", extra);
+}
 
-  return `
-    <div class="screen">
-      <div class="status-bar"></div>
-      <div class="nav">
-        <div class="nav-left">
-          <button class="back" onclick="goBack()">‹</button>
-          <span class="subject">${escapeHtml(item.name)}</span>
-        </div>
-      </div>
-      <div style="padding:0 20px;font-size:12px;color:#ABABA6;">${escapeHtml(subj ? subj.name : '')}</div>
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
 
-      <div class="hero">
-        <div class="big-ring">
-          <svg width="200" height="200">
-            <circle class="big-ring-bg" cx="100" cy="100" r="${r}"></circle>
-            <circle class="big-ring-fg" cx="100" cy="100" r="${r}" stroke="${itemColor}"
-              stroke-dasharray="${circumference.toFixed(1)}" stroke-dashoffset="${offset.toFixed(1)}"></circle>
-          </svg>
-          <div class="big-ring-center">
-            <div class="today-value">${centerValue}</div>
-            <div class="today-unit">${centerUnit}</div>
-          </div>
-        </div>
-        ${rangeNote}
-      </div>
+/* ---------- Calendar nav actions ---------- */
+function shiftMonth(n) {
+  const [y,m] = state.calendarMonth.split("-").map(Number);
+  const dt = new Date(y, m-1+n, 1);
+  state.calendarMonth = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}`;
+  renderApp();
+}
+function selectDate(dateStr) {
+  state.selectedDate = dateStr;
+  renderApp();
+}
+function goToday() {
+  state.selectedDate = todayStr();
+  state.calendarMonth = todayStr().slice(0,7);
+  renderApp();
+}
+function checkSvgSmall() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="width:10px;height:10px;"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+}
 
-      <div class="stats-row">
-        <div class="stat">
-          <div class="label">누적</div>
-          <div class="value">${overall.cumulative} / ${item.target}${unit}</div>
-        </div>
-        <div class="stat">
-          <div class="label">목표일</div>
-          <div class="value">${formatDateShort(item.endDate)}</div>
-        </div>
-        <div class="stat">
-          <div class="label">남은 일수</div>
-          <div class="value ${isOverdue ? 'overdue' : ''}">${dday}</div>
-        </div>
-      </div>
+/* ---------- Complete toggle ---------- */
+async function toggleComplete(occId) {
+  const o = state.occurrences.find(x => x.id === occId);
+  if (!o) return;
+  o.completed = !o.completed;
+  renderApp();
+  if (ui.timelineCategoryId) renderCategoryTimelineModal();
+  try { await fsUpdate("occurrences", occId, { completed: o.completed }); }
+  catch (e) {
+    alert("저장에 실패했어요. 다시 시도해줘.");
+    o.completed = !o.completed;
+    renderApp();
+    if (ui.timelineCategoryId) renderCategoryTimelineModal();
+  }
+}
 
-      <div class="section-title">오늘 기록</div>
-      <div class="log-input">
-        <span class="log-label">오늘까지 완료한 ${item.type === 'chapter' ? '챕터' : '양'}</span>
-        <div class="stepper">
-          <button onclick="stepTodayLog('${item.id}', -1)">−</button>
-          <span class="num" id="today-log-num">${todayLogValue}</span>
-          <button onclick="stepTodayLog('${item.id}', 1)">+</button>
+/* ---------- Select mode ---------- */
+function toggleSelectMode() {
+  state.selectMode = !state.selectMode;
+  state.selectedIds.clear();
+  renderApp();
+}
+function toggleSelect(occId) {
+  if (state.selectedIds.has(occId)) state.selectedIds.delete(occId);
+  else state.selectedIds.add(occId);
+  renderApp();
+}
+
+/* ---------- Shift modal (postpone / pull forward) ---------- */
+function openShiftModal(sign) {
+  ui.shiftSign = sign;
+  const label = sign === 1 ? "미루기" : "당기기";
+  document.getElementById("modalRoot").innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-sheet">
+        <div class="modal-title">${label} <button class="modal-close" onclick="closeModal()">×</button></div>
+        <div class="field">
+          <label>며칠 ${label === '미루기' ? '미룰까요' : '당길까요'}?</label>
+          <input type="number" id="shiftDays" min="1" value="1">
         </div>
-      </div>
-
-      <div class="section-title">최근 기록</div>
-      <div class="history">${historyHtml}</div>
-
-      <div class="danger-zone">
-        <button class="danger-btn" onclick="openDeleteItemConfirm('${item.id}')">이 항목 삭제</button>
+        <button class="btn-primary" onclick="applyShift('this')">선택한 일정만 이동</button>
+        <button class="btn-secondary" onclick="applyShift('cascade')">선택한 항목들의 이후 회차도 함께 이동</button>
       </div>
     </div>
   `;
 }
+async function applyShift(scope) {
+  const daysInput = document.getElementById("shiftDays");
+  let days = parseInt(daysInput.value, 10);
+  if (!days || days < 1) { alert("1 이상의 숫자를 입력해줘."); return; }
+  days = days * ui.shiftSign;
 
-/* =========================================================
-   화면 전환
-   ========================================================= */
+  const finalDates = new Map();
+  state.selectedIds.forEach(occId => {
+    const o = state.occurrences.find(x => x.id === occId);
+    if (!o) return;
+    finalDates.set(o.id, addDays(o.date, days));
+    if (scope === "cascade") {
+      state.occurrences
+        .filter(x => x.itemId === o.itemId && x.round > o.round)
+        .forEach(f => {
+          const base = finalDates.has(f.id) ? finalDates.get(f.id) : f.date;
+          finalDates.set(f.id, addDays(base, days));
+        });
+    }
+  });
 
-function openDetail(itemId) {
-  nav = { screen: 'detail', itemId };
-  render();
+  const writes = Array.from(finalDates.entries()).map(([id, date]) => ({ collection: "occurrences", id, data: { date } }));
+  closeModal();
+  state.loading = true; renderApp();
+  try {
+    await fsCommitUpdates(writes);
+    finalDates.forEach((date, id) => { const o = state.occurrences.find(x=>x.id===id); if (o) o.date = date; });
+    state.selectMode = false; state.selectedIds.clear();
+    state.loading = false;
+    renderApp();
+  } catch (e) {
+    state.loading = false;
+    alert("이동에 실패했어요. 다시 시도해줘.");
+    renderApp();
+  }
 }
 
-function goBack() {
-  nav = { screen: 'list', itemId: null };
-  render();
+/* ---------- Modal generic close ---------- */
+function closeModal() {
+  document.getElementById("modalRoot").innerHTML = "";
+  ui.timelineCategoryId = null;
+  ui.detailItemId = null;
 }
 
-/* =========================================================
-   오늘 기록 입력 (스테퍼)
-   ========================================================= */
-
-function stepTodayLog(itemId, delta) {
-  const item = state.items.find(i => i.id === itemId);
-  if (!item) return;
-  const today = todayStr();
-  const yesterday = addDaysStr(today, -1);
-  const cumYesterday = getCumulativeAt(item.logs, yesterday);
-  const current = item.logs[today] !== undefined ? item.logs[today] : cumYesterday;
-  let next = current + delta;
-  if (next < cumYesterday) next = cumYesterday;
-  if (next > item.target) next = item.target;
-  item.logs[today] = next;
-  render();
-  saveState();
-}
-
-/* =========================================================
-   모달: 과목 추가
-   ========================================================= */
-
-function openAddSubjectModal() {
-  document.getElementById('input-subject-name').value = '';
-  showModal('modal-add-subject');
-}
-
-function submitAddSubject() {
-  const name = document.getElementById('input-subject-name').value.trim();
-  if (!name) { alert('과목명을 입력해주세요.'); return; }
-  state.subjects.push({ id: uid(), name });
-  closeModal('modal-add-subject');
-  render();
-  saveState();
-}
-
-/* =========================================================
-   모달: 항목 추가
-   ========================================================= */
-
-function openAddItemModal() {
-  if (state.subjects.length === 0) {
-    alert('먼저 과목을 추가해주세요.');
-    openAddSubjectModal();
+/* ---------- Add item modal ---------- */
+function openAddItem() {
+  if (state.categories.length === 0) {
+    document.getElementById("modalRoot").innerHTML = `
+      <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+        <div class="modal-sheet">
+          <div class="modal-title">카테고리가 필요해요 <button class="modal-close" onclick="closeModal()">×</button></div>
+          <p style="font-size:14px;color:#666;">학습 항목을 추가하려면 먼저 카테고리를 하나 만들어줘.</p>
+          <button class="btn-primary" onclick="closeModal(); openCategoryModal();">카테고리 만들기</button>
+        </div>
+      </div>
+    `;
     return;
   }
-  pendingItemType = 'count';
-  document.getElementById('type-count').classList.add('active');
-  document.getElementById('type-chapter').classList.remove('active');
-  document.getElementById('type-hint').textContent = '순서 없는 총량 (예: 단어 317개)';
-  document.getElementById('target-label').textContent = '총 목표량';
-  document.getElementById('input-item-name').value = '';
-  document.getElementById('input-target').value = '';
-  document.getElementById('input-start-date').value = todayStr();
-  document.getElementById('input-end-date').value = '';
-
-  pendingSubjectIdForItem = state.subjects[0].id;
-  const pickList = document.getElementById('subject-pick-list');
-  pickList.innerHTML = state.subjects.map(s => `
-    <button class="${s.id === pendingSubjectIdForItem ? 'active' : ''}" onclick="pickSubjectForItem('${s.id}')" id="pick-${s.id}">${escapeHtml(s.name)}</button>
-  `).join('');
-
-  showModal('modal-add-item');
+  const catOptions = state.categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+  const presetOptions = state.presets.map(p => `<option value="${p.id}">${escapeHtml(p.name)} (${p.offsets.join(",")})</option>`).join("");
+  document.getElementById("modalRoot").innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-sheet">
+        <div class="modal-title">학습 항목 추가 <button class="modal-close" onclick="closeModal()">×</button></div>
+        <div class="field" style="position:relative;">
+          <label>제목</label>
+          <input type="text" id="ai-title" autocomplete="off" oninput="onTitleInput(this.value)" onblur="setTimeout(()=>{const el=document.getElementById('ai-title-suggestions'); if(el) el.innerHTML='';},150)" placeholder="예: 이차방정식과 이차함수">
+          <div id="ai-title-suggestions" class="suggest-list"></div>
+        </div>
+        <div class="field">
+          <label>카테고리</label>
+          <select id="ai-category">${catOptions}</select>
+        </div>
+        <div class="field">
+          <label>시작일</label>
+          <input type="date" id="ai-startdate" value="${state.selectedDate}">
+        </div>
+        <div class="field">
+          <label>복습 주기</label>
+          <select id="ai-cyclemode" onchange="onCycleModeChange()">
+            ${presetOptions}
+            <option value="__custom__">직접 입력</option>
+          </select>
+        </div>
+        <div class="field" id="ai-custom-wrap" style="display:${state.presets.length ? 'none' : 'block'}">
+          <label>간격 (쉼표로 구분, 시작일 기준 며칠 뒤)</label>
+          <input type="text" id="ai-custom" placeholder="0,1,3,7,14,28">
+          <div style="margin-top:8px;">
+            <label style="display:inline-flex;align-items:center;font-size:13px;color:#555;">
+              <input type="checkbox" id="ai-saveaspreset" onchange="onSaveAsPresetChange()"> 이 주기를 프리셋으로 저장
+            </label>
+          </div>
+          <div id="ai-presetname-wrap" style="display:none; margin-top:8px;">
+            <input type="text" id="ai-presetname" placeholder="프리셋 이름">
+          </div>
+        </div>
+        <button class="btn-primary" onclick="saveAddItem()">저장</button>
+      </div>
+    </div>
+  `;
 }
-
-function pickSubjectForItem(subjectId) {
-  pendingSubjectIdForItem = subjectId;
-  state.subjects.forEach(s => {
-    document.getElementById(`pick-${s.id}`).classList.toggle('active', s.id === subjectId);
-  });
+function onTitleInput(v) {
+  const box = document.getElementById("ai-title-suggestions");
+  if (!box) return;
+  const q = v.trim().toLowerCase();
+  if (!q) { box.innerHTML = ""; return; }
+  const titles = Array.from(new Set(state.items.map(i => i.title)));
+  const matches = titles.filter(t => t.toLowerCase().includes(q)).slice(0, 6);
+  if (matches.length === 0) { box.innerHTML = ""; return; }
+  box.innerHTML = matches.map(t => `<div class="suggest-item" onmousedown="selectTitleSuggestion('${t.replace(/'/g,"\\'")}')">${escapeHtml(t)}</div>`).join("");
 }
-
-function setItemType(type) {
-  pendingItemType = type;
-  document.getElementById('type-count').classList.toggle('active', type === 'count');
-  document.getElementById('type-chapter').classList.toggle('active', type === 'chapter');
-  document.getElementById('type-hint').textContent = type === 'chapter'
-    ? '순서 있는 목차 (예: 인강 70강)'
-    : '순서 없는 총량 (예: 단어 317개)';
-  document.getElementById('target-label').textContent = type === 'chapter' ? '총 강의 수' : '총 목표량';
+function selectTitleSuggestion(t) {
+  document.getElementById("ai-title").value = t;
+  document.getElementById("ai-title-suggestions").innerHTML = "";
 }
-
-function submitAddItem() {
-  const name = document.getElementById('input-item-name').value.trim();
-  const target = parseInt(document.getElementById('input-target').value, 10);
-  const startDate = document.getElementById('input-start-date').value;
-  const endDate = document.getElementById('input-end-date').value;
-
-  if (!name) { alert('항목명을 입력해주세요.'); return; }
-  if (!target || target <= 0) { alert('목표량을 입력해주세요.'); return; }
-  if (!startDate || !endDate) { alert('시작일과 목표일을 입력해주세요.'); return; }
-  if (endDate < startDate) { alert('목표일이 시작일보다 빠를 수 없어요.'); return; }
-
-  const existingCountInSubject = state.items.filter(i => i.subjectId === pendingSubjectIdForItem).length;
-  const color = COLORS[existingCountInSubject % COLORS.length];
-
-  state.items.push({
-    id: uid(), subjectId: pendingSubjectIdForItem, name, type: pendingItemType,
-    target, startDate, endDate, logs: {}, color
-  });
-  closeModal('modal-add-item');
-  render();
-  saveState();
+function onCycleModeChange() {
+  const mode = document.getElementById("ai-cyclemode").value;
+  document.getElementById("ai-custom-wrap").style.display = mode === "__custom__" ? "block" : "none";
 }
-
-/* =========================================================
-   모달: 과거 기록 수정
-   ========================================================= */
-
-function openEditLog(itemId, date) {
-  const item = state.items.find(i => i.id === itemId);
-  if (!item) return;
-  editingLogItemId = itemId;
-  editingLogDate = date;
-  document.getElementById('edit-log-title').textContent = `${formatDateShort(date)} 기록 수정`;
-  const unit = item.type === 'chapter' ? '챕터' : '양';
-  document.getElementById('edit-log-label').textContent = `그날까지 완료한 ${unit}`;
-  document.getElementById('input-edit-log-value').value = item.logs[date];
-  showModal('modal-edit-log');
+function onSaveAsPresetChange() {
+  const checked = document.getElementById("ai-saveaspreset").checked;
+  document.getElementById("ai-presetname-wrap").style.display = checked ? "block" : "none";
 }
-
-function submitEditLog() {
-  const item = state.items.find(i => i.id === editingLogItemId);
-  if (!item) return;
-  const val = parseInt(document.getElementById('input-edit-log-value').value, 10);
-  if (isNaN(val) || val < 0) { alert('올바른 값을 입력해주세요.'); return; }
-  item.logs[editingLogDate] = val;
-  closeModal('modal-edit-log');
-  render();
-  saveState();
+function parseOffsets(str) {
+  return Array.from(new Set(
+    str.split(/[, ]+/).map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n >= 0)
+  )).sort((a,b) => a-b);
 }
+async function saveAddItem() {
+  const title = document.getElementById("ai-title").value.trim();
+  const categoryId = document.getElementById("ai-category").value;
+  const startDate = document.getElementById("ai-startdate").value;
+  const cycleMode = document.getElementById("ai-cyclemode").value;
 
-/* =========================================================
-   삭제 확인
-   ========================================================= */
+  if (!title) { alert("제목을 입력해줘."); return; }
+  if (!startDate) { alert("시작일을 선택해줘."); return; }
 
-function openDeleteSubjectConfirm(subjectId) {
-  const subj = state.subjects.find(s => s.id === subjectId);
-  document.getElementById('confirm-delete-text').textContent = `'${subj.name}' 과목과 그 안의 모든 항목을 삭제할까요?`;
-  pendingDeleteAction = () => {
-    state.items = state.items.filter(i => i.subjectId !== subjectId);
-    state.subjects = state.subjects.filter(s => s.id !== subjectId);
-  };
-  showModal('modal-confirm-delete');
-}
-
-function openDeleteItemConfirm(itemId) {
-  const item = state.items.find(i => i.id === itemId);
-  document.getElementById('confirm-delete-text').textContent = `'${item.name}' 항목을 삭제할까요?`;
-  pendingDeleteAction = () => {
-    state.items = state.items.filter(i => i.id !== itemId);
-    nav = { screen: 'list', itemId: null };
-  };
-  showModal('modal-confirm-delete');
-}
-
-function confirmDelete() {
-  if (pendingDeleteAction) pendingDeleteAction();
-  pendingDeleteAction = null;
-  closeModal('modal-confirm-delete');
-  render();
-  saveState();
-}
-
-/* =========================================================
-   유틸
-   ========================================================= */
-
-function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
-function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-function formatDateShort(dateStr) {
-  const [y, m, d] = dateStr.split('-');
-  return `${parseInt(m)}월 ${parseInt(d)}일`;
-}
-
-function formatTodayLabel(dateStr) {
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
-  const d = new Date(dateStr + 'T00:00:00');
-  return `${formatDateShort(dateStr)} ${days[d.getDay()]}요일`;
-}
-
-/* =========================================================
-   Firebase 연결 (로그인 없이, 고정 문서 하나에 전체 상태 저장)
-   ========================================================= */
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCN2PkVTU_kyuSIxB_SSlEQdfZBV7tNKEQ",
-  authDomain: "tracker-f86d0.firebaseapp.com",
-  projectId: "tracker-f86d0",
-  storageBucket: "tracker-f86d0.firebasestorage.app",
-  messagingSenderId: "969614750843",
-  appId: "1:969614750843:web:944efc90b5c462ca7b5ede"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const docRef = db.collection('trackerApp').doc('shared');
-
-let saveTimer = null;
-function saveState() {
-  // 짧은 시간 내 연속 저장 요청은 마지막 것만 반영 (스테퍼 연타 등 대비)
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    try {
-      await docRef.set({ data: JSON.stringify(state), updatedAt: Date.now() });
-    } catch (e) {
-      console.error('저장 실패:', e);
+  let offsets;
+  let newPresetName = null;
+  if (cycleMode === "__custom__") {
+    const customStr = document.getElementById("ai-custom").value.trim();
+    offsets = parseOffsets(customStr);
+    if (offsets.length === 0) { alert("복습 간격을 입력해줘. 예: 0,1,3,7,14,28"); return; }
+    if (document.getElementById("ai-saveaspreset").checked) {
+      newPresetName = document.getElementById("ai-presetname").value.trim();
+      if (!newPresetName) { alert("프리셋 이름을 입력해줘."); return; }
     }
-  }, 300);
-}
+  } else {
+    const preset = state.presets.find(p => p.id === cycleMode);
+    if (!preset) { alert("복습 주기를 선택해줘."); return; }
+    offsets = preset.offsets;
+  }
 
-async function loadState() {
+  closeModal();
+  state.loading = true; renderApp();
   try {
-    const snap = await docRef.get();
-    if (snap.exists && snap.data().data) {
-      const parsed = JSON.parse(snap.data().data);
-      if (parsed && Array.isArray(parsed.subjects) && Array.isArray(parsed.items)) {
-        state = parsed;
-      }
+    if (newPresetName) {
+      const preset = await fsAdd("presets", { name: newPresetName, offsets });
+      state.presets.push(preset);
     }
+    const item = await fsAdd("items", { title, categoryId, startDate, offsets, createdAt: todayStr() });
+    state.items.push(item);
+    for (let i = 0; i < offsets.length; i++) {
+      const occ = await fsAdd("occurrences", { itemId: item.id, round: i+1, date: addDays(startDate, offsets[i]), completed: false });
+      state.occurrences.push(occ);
+    }
+    state.loading = false;
+    renderApp();
   } catch (e) {
-    console.error('불러오기 실패:', e);
+    state.loading = false;
+    alert("저장에 실패했어요. 다시 시도해줘.");
+    renderApp();
   }
 }
 
-async function initApp() {
-  document.getElementById('app').innerHTML = `
-    <div class="screen" style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ABABA6;font-size:14px;">
-      불러오는 중...
+/* ---------- Category modal ---------- */
+/* ---------- Category timeline (all items in a category, chronological) ---------- */
+function openCategoryTimeline(catId) {
+  ui.timelineCategoryId = catId;
+  renderCategoryTimelineModal(true);
+}
+function renderCategoryTimelineModal(scrollToToday) {
+  const cat = getCategory(ui.timelineCategoryId);
+  if (!cat) { closeModal(); return; }
+  const occs = state.occurrences.filter(o => { const it = getItem(o.itemId); return it && it.categoryId === cat.id; });
+  const byDate = {};
+  occs.forEach(o => { (byDate[o.date] = byDate[o.date] || []).push(o); });
+  const dates = Object.keys(byDate).sort();
+  const today = todayStr();
+  let body = "";
+  let todayInserted = false;
+  const todayMarker = `<div class="timeline-today-marker"><span class="line"></span><span class="label">오늘</span><span class="line"></span></div>`;
+  dates.forEach(dateStr => {
+    if (!todayInserted && dateStr >= today) { body += todayMarker; todayInserted = true; }
+    const label = formatDateLabel(dateStr);
+    body += `<div class="timeline-date-label">${dateStr.slice(0,4)}년 ${label.main} (${label.sub.replace('요일','')})</div>`;
+    byDate[dateStr].sort((a,b)=>a.round-b.round).forEach(o => {
+      const item = getItem(o.itemId);
+      if (!item) return;
+      body += `
+        <div class="row" onclick="openDetail('${item.id}')">
+          <span class="chk ${o.completed ? 'done' : ''}" onclick="event.stopPropagation(); toggleComplete('${o.id}')">${o.completed ? checkSvg() : ''}</span>
+          <span class="row-title ${o.completed ? 'done' : ''}">${escapeHtml(item.title)}</span>
+          <span class="row-round">${o.round}/${totalRounds(o.itemId)}</span>
+        </div>
+      `;
+    });
+  });
+  if (!todayInserted) body += todayMarker;
+  if (dates.length === 0) body = `<div class="empty">아직 학습 기록이 없어요.</div>`;
+
+  document.getElementById("modalRoot").innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-sheet">
+        <div class="modal-title">
+          <span style="display:flex;align-items:center;gap:8px;"><span class="cat-dot" style="background:${cat.color}"></span>${escapeHtml(cat.name)}</span>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div id="timeline-body">${body}</div>
+      </div>
     </div>
   `;
-  await loadState();
-  render();
+  const marker = document.querySelector(".timeline-today-marker");
+  if (marker && scrollToToday) marker.scrollIntoView({ block: "center" });
 }
 
-/* =========================================================
-   초기화
-   ========================================================= */
+function openCategoryModal() {
+  renderCategoryModal();
+}
+function renderCategoryModal() {
+  const rows = state.categories.map((c, idx) => `
+    <div class="catlist-row">
+      <span class="cat-dot" style="background:${c.color}"></span>
+      <span class="name">${escapeHtml(c.name)}</span>
+      <button class="arrow-btn" ${idx===0?'disabled style="opacity:0.3"':''} onclick="moveCategory('${c.id}',-1)">↑</button>
+      <button class="arrow-btn" ${idx===state.categories.length-1?'disabled style="opacity:0.3"':''} onclick="moveCategory('${c.id}',1)">↓</button>
+      <button class="x-btn" onclick="deleteCategoryConfirm('${c.id}')">×</button>
+    </div>
+  `).join("") || `<p style="font-size:13.5px;color:#999;">아직 카테고리가 없어요.</p>`;
 
-initApp();
+  const swatches = CATEGORY_COLORS.map(c => `<button class="swatch ${ui.newCategoryColor===c?'selected':''}" data-color="${c}" style="background:${c}" onclick="selectNewCategoryColor('${c}')"></button>`).join("");
+
+  document.getElementById("modalRoot").innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-sheet">
+        <div class="modal-title">카테고리 <button class="modal-close" onclick="closeModal()">×</button></div>
+        <div id="catlist">${rows}</div>
+        <div class="field" style="margin-top:18px;">
+          <label>새 카테고리 이름</label>
+          <input type="text" id="newcat-name" placeholder="예: 수학">
+        </div>
+        <div class="field">
+          <label>색상</label>
+          <div class="swatches" id="newcat-swatches">${swatches}</div>
+        </div>
+        <button class="btn-primary" onclick="saveCategory()">추가</button>
+      </div>
+    </div>
+  `;
+}
+function selectNewCategoryColor(c) {
+  ui.newCategoryColor = c;
+  document.getElementById("newcat-swatches").querySelectorAll(".swatch").forEach(el => {
+    el.classList.toggle("selected", el.getAttribute("data-color") === c);
+  });
+}
+async function saveCategory() {
+  const name = document.getElementById("newcat-name").value.trim();
+  if (!name) { alert("이름을 입력해줘."); return; }
+  try {
+    const cat = await fsAdd("categories", { name, color: ui.newCategoryColor, order: state.categories.length });
+    state.categories.push(cat);
+    ui.newCategoryColor = CATEGORY_COLORS[0];
+    renderCategoryModal();
+    renderApp();
+  } catch (e) {
+    alert("추가에 실패했어요.");
+  }
+}
+async function deleteCategoryConfirm(id) {
+  if (!confirm("이 카테고리를 삭제할까요? (해당 카테고리의 학습 항목은 남아있어요)")) return;
+  try {
+    await fetch(`${BASE}/categories/${id}`, { method: "DELETE" });
+    state.categories = state.categories.filter(c => c.id !== id);
+    renderCategoryModal();
+    renderApp();
+  } catch (e) {
+    alert("삭제에 실패했어요.");
+  }
+}
+async function moveCategory(id, dir) {
+  const idx = state.categories.findIndex(c => c.id === id);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= state.categories.length) return;
+  const a = state.categories[idx], b = state.categories[swapIdx];
+  const aOrder = a.order, bOrder = b.order;
+  a.order = bOrder; b.order = aOrder;
+  state.categories.sort((x,y) => (x.order??0)-(y.order??0));
+  renderCategoryModal();
+  renderApp();
+  try {
+    await fsCommitUpdates([
+      { collection: "categories", id: a.id, data: { order: a.order } },
+      { collection: "categories", id: b.id, data: { order: b.order } }
+    ]);
+  } catch (e) { alert("순서 변경에 실패했어요."); }
+}
+
+/* ---------- Item detail modal ---------- */
+function openDetail(itemId) {
+  const item = getItem(itemId);
+  if (!item) return;
+  ui.detailItemId = itemId;
+  ui.detailDraft = { title: item.title, categoryId: item.categoryId, dates: {}, selected: new Set(), deletePending: new Set() };
+  renderDetailModal();
+}
+function renderDetailModal() {
+  const item = getItem(ui.detailItemId);
+  if (!item) { closeModal(); return; }
+  const draft = ui.detailDraft;
+  const occs = state.occurrences.filter(o => o.itemId === item.id).sort((a,b)=>a.round-b.round);
+  const visibleOccs = occs.filter(o => !draft.deletePending.has(o.id));
+  const rows = visibleOccs.map(o => {
+    const curDate = draft.dates[o.id] ?? o.date;
+    const planned = addDays(item.startDate, item.offsets[o.round-1]);
+    const diff = daysDiff(planned, curDate);
+    const plannedLabel = diff === 0
+      ? `원래 계획 ${formatMD(planned)}`
+      : `원래 계획 ${formatMD(planned)} (${diff > 0 ? '+' : ''}${diff}일)`;
+    const selected = draft.selected.has(o.id);
+    return `
+    <div class="hist-row">
+      <input type="checkbox" class="sel-chk" ${selected ? 'checked' : ''} onchange="toggleOccSelect('${o.id}')">
+      <span class="hist-round">${o.round}회차</span>
+      <span class="hist-date">
+        <input type="date" value="${curDate}" onchange="onDraftDateChange('${o.id}', this.value)">
+        <div class="hist-planned">${plannedLabel}</div>
+      </span>
+      <span class="chk ${o.completed ? 'done' : ''}" onclick="toggleCompleteDetail('${o.id}')">${o.completed ? checkSvg() : ''}</span>
+    </div>
+  `;
+  }).join("");
+  const catOptions = state.categories.map(c => `<option value="${c.id}" ${c.id===draft.categoryId?'selected':''}>${escapeHtml(c.name)}</option>`).join("");
+  const deleteSelBtn = draft.selected.size > 0
+    ? `<button class="btn-secondary" style="color:#c0392b;border-color:#eecccc;" onclick="stageDeleteSelected()">선택한 ${draft.selected.size}개 회차 삭제 표시</button>`
+    : "";
+  const pendingNote = draft.deletePending.size > 0
+    ? `<div class="pending-note">삭제 예정 ${draft.deletePending.size}개 회차 (저장 시 반영) · <button class="link-btn" onclick="undoPendingDelete()">되돌리기</button></div>`
+    : "";
+  document.getElementById("modalRoot").innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this) closeModal()">
+      <div class="modal-sheet">
+        <div class="modal-title">
+          <input type="text" class="title-input" id="detail-title" value="${escapeHtml(draft.title)}" onchange="onDraftTitleChange(this.value)">
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="field" style="margin-bottom:16px;">
+          <label>카테고리</label>
+          <select id="detail-category" onchange="onDraftCategoryChange(this.value)">${catOptions}</select>
+        </div>
+        <div id="hist-rows">${rows}</div>
+        ${deleteSelBtn}
+        ${pendingNote}
+        <button class="btn-primary" style="margin-top:16px;" onclick="saveDetail('${item.id}')">저장</button>
+        <button class="btn-danger" onclick="deleteItemConfirm('${item.id}')">이 학습 항목 삭제</button>
+      </div>
+    </div>
+  `;
+}
+function onDraftTitleChange(v) { ui.detailDraft.title = v.trim(); renderDetailModal(); }
+function onDraftCategoryChange(v) { ui.detailDraft.categoryId = v; renderDetailModal(); }
+function onDraftDateChange(occId, v) { if (!v) return; ui.detailDraft.dates[occId] = v; renderDetailModal(); }
+function toggleOccSelect(occId) {
+  const sel = ui.detailDraft.selected;
+  if (sel.has(occId)) sel.delete(occId); else sel.add(occId);
+  renderDetailModal();
+}
+function stageDeleteSelected() {
+  const draft = ui.detailDraft;
+  draft.selected.forEach(id => draft.deletePending.add(id));
+  draft.selected.clear();
+  renderDetailModal();
+}
+function undoPendingDelete() {
+  ui.detailDraft.deletePending.clear();
+  renderDetailModal();
+}
+async function saveDetail(itemId) {
+  const item = getItem(itemId);
+  const draft = ui.detailDraft;
+  if (!draft.title) { alert("제목을 입력해줘."); return; }
+  if (draft.deletePending.size > 0 && !confirm(`${draft.deletePending.size}개 회차를 삭제하고 저장할까요?`)) return;
+  const dateWrites = Object.entries(draft.dates)
+    .filter(([id]) => !draft.deletePending.has(id))
+    .map(([id, date]) => ({ collection: "occurrences", id, data: { date } }));
+  const deleteIds = Array.from(draft.deletePending);
+  closeModal();
+  state.loading = true; renderApp();
+  try {
+    await fsUpdate("items", itemId, { title: draft.title, categoryId: draft.categoryId });
+    item.title = draft.title; item.categoryId = draft.categoryId;
+    await fsCommitUpdates(dateWrites);
+    dateWrites.forEach(w => { const o = state.occurrences.find(x=>x.id===w.id); if (o) o.date = w.data.date; });
+    await fsCommitDeletes(deleteIds.map(id => ({ collection: "occurrences", id })));
+    state.occurrences = state.occurrences.filter(o => !deleteIds.includes(o.id));
+    state.loading = false;
+    renderApp();
+  } catch (e) {
+    state.loading = false;
+    alert("저장에 실패했어요.");
+    renderApp();
+  }
+}
+async function toggleCompleteDetail(occId) {
+  const o = state.occurrences.find(x => x.id === occId);
+  if (!o) return;
+  o.completed = !o.completed;
+  renderDetailModal();
+  renderApp();
+  try { await fsUpdate("occurrences", occId, { completed: o.completed }); }
+  catch (e) { alert("저장에 실패했어요."); }
+}
+async function deleteItemConfirm(itemId) {
+  if (!confirm("이 학습 항목과 모든 회차 일정을 삭제할까요?")) return;
+  const occIds = state.occurrences.filter(o => o.itemId === itemId).map(o => o.id);
+  const writes = [{ collection: "items", id: itemId }, ...occIds.map(id => ({ collection: "occurrences", id }))];
+  closeModal();
+  state.loading = true; renderApp();
+  try {
+    await fsCommitDeletes(writes);
+    state.items = state.items.filter(i => i.id !== itemId);
+    state.occurrences = state.occurrences.filter(o => o.itemId !== itemId);
+    state.loading = false;
+    renderApp();
+  } catch (e) {
+    state.loading = false;
+    alert("삭제에 실패했어요.");
+    renderApp();
+  }
+}
+
+
+/* ---------- Init ---------- */
+loadAll();
 </script>
 </body>
 </html>
