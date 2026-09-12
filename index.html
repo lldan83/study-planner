@@ -308,8 +308,9 @@ function occurrencesForDate(dateStr) {
   return state.occurrences.filter(o => o.date === dateStr);
 }
 function totalRounds(itemId) {
-  const item = getItem(itemId);
-  return item ? item.offsets.length : 0;
+  // Reflects the number of occurrences actually remaining for this item,
+  // not the original planned offsets length, so it updates correctly after rounds are deleted.
+  return state.occurrences.filter(o => o.itemId === itemId).length;
 }
 /* Returns a Set of occurrence ids that need attention: same item, same date, 2+ occurrences.
    The earliest round (closest to original plan) is excluded; only the later round(s) are flagged,
@@ -614,9 +615,16 @@ async function applyShift(scope) {
 
 /* ---------- Modal generic close ---------- */
 function closeModal() {
+  const returnTo = ui.detailItemId ? ui.detailReturnTo : null;
+  ui.detailItemId = null;
+  ui.detailReturnTo = null;
+  if (returnTo && returnTo.type === "timeline") {
+    ui.timelineCategoryId = returnTo.categoryId;
+    renderCategoryTimelineModal();
+    return;
+  }
   document.getElementById("modalRoot").innerHTML = "";
   ui.timelineCategoryId = null;
-  ui.detailItemId = null;
 }
 
 /* ---------- Add item modal ---------- */
@@ -890,6 +898,10 @@ async function moveCategory(id, dir) {
 function openDetail(itemId) {
   const item = getItem(itemId);
   if (!item) return;
+  // Remember where the detail view was opened from, so closing it can return there
+  // instead of always falling back to the main screen.
+  ui.detailReturnTo = ui.timelineCategoryId ? { type: "timeline", categoryId: ui.timelineCategoryId } : null;
+  ui.timelineCategoryId = null;
   ui.detailItemId = itemId;
   ui.detailDraft = { title: item.title, categoryId: item.categoryId, dates: {}, selected: new Set(), deletePending: new Set() };
   renderDetailModal();
@@ -985,6 +997,7 @@ async function saveDetail(itemId) {
     state.occurrences = state.occurrences.filter(o => !deleteIds.includes(o.id));
     state.loading = false;
     renderApp();
+    if (ui.timelineCategoryId) renderCategoryTimelineModal();
   } catch (e) {
     state.loading = false;
     alert("저장에 실패했어요.");
@@ -1012,6 +1025,7 @@ async function deleteItemConfirm(itemId) {
     state.occurrences = state.occurrences.filter(o => o.itemId !== itemId);
     state.loading = false;
     renderApp();
+    if (ui.timelineCategoryId) renderCategoryTimelineModal();
   } catch (e) {
     state.loading = false;
     alert("삭제에 실패했어요.");
