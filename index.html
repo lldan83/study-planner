@@ -71,6 +71,7 @@
   .chk svg { width: 11px; height: 11px; }
   .sel-chk { width: 18px; height: 18px; flex-shrink: 0; accent-color: #111; }
   .row-title { flex: 1; font-size: 14.5px; color: #111; }
+  .row-title.first { font-weight: 700; }
   .row-title.done { color: #bbb; text-decoration: line-through; }
   .row-round { font-size: 11.5px; color: #aaa; flex-shrink: 0; }
 
@@ -310,7 +311,9 @@ function totalRounds(itemId) {
   const item = getItem(itemId);
   return item ? item.offsets.length : 0;
 }
-/* Returns a Set of occurrence ids that are "duplicated": same item, same date, 2+ occurrences */
+/* Returns a Set of occurrence ids that need attention: same item, same date, 2+ occurrences.
+   The earliest round (closest to original plan) is excluded; only the later round(s) are flagged,
+   since those are the ones that should actually be pushed to a different day. */
 function duplicateOccIdsForDate(dateStr) {
   const occs = occurrencesForDate(dateStr);
   const byItem = {};
@@ -320,7 +323,10 @@ function duplicateOccIdsForDate(dateStr) {
   });
   const dupIds = new Set();
   Object.values(byItem).forEach(group => {
-    if (group.length > 1) group.forEach(o => dupIds.add(o.id));
+    if (group.length > 1) {
+      const sorted = [...group].sort((a,b) => a.round - b.round);
+      sorted.slice(1).forEach(o => dupIds.add(o.id));
+    }
   });
   return dupIds;
 }
@@ -451,17 +457,21 @@ function renderList() {
       const total = totalRounds(o.itemId);
       const selected = state.selectedIds.has(o.id);
       const isDup = dupIds.has(o.id);
+      const isFirst = o.round === 1;
       const rowClasses = ["row"];
       if (state.selectMode) rowClasses.push("selectable");
       if (selected) rowClasses.push("selected");
       if (isDup) rowClasses.push("duplicate");
+      const titleClasses = ["row-title"];
+      if (o.completed) titleClasses.push("done");
+      if (isFirst) titleClasses.push("first");
       html += `
         <div class="${rowClasses.join(' ')}" onclick="${state.selectMode ? `toggleSelect('${o.id}')` : `openDetail('${item.id}')`}">
           ${state.selectMode
             ? `<input type="checkbox" class="sel-chk" ${selected ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelect('${o.id}')">`
             : `<span class="chk ${o.completed ? 'done' : ''}" onclick="event.stopPropagation(); toggleComplete('${o.id}')">${o.completed ? checkSvg() : ''}</span>`
           }
-          <span class="row-title ${o.completed ? 'done' : ''}">${escapeHtml(item.title)}</span>
+          <span class="${titleClasses.join(' ')}">${escapeHtml(item.title)}</span>
           <span class="row-round">${o.round}/${total}</span>
         </div>
       `;
@@ -764,10 +774,13 @@ function renderCategoryTimelineModal(scrollToToday) {
     byDate[dateStr].sort((a,b)=>a.round-b.round).forEach(o => {
       const item = getItem(o.itemId);
       if (!item) return;
+      const titleClasses = ["row-title"];
+      if (o.completed) titleClasses.push("done");
+      if (o.round === 1) titleClasses.push("first");
       body += `
         <div class="row" onclick="openDetail('${item.id}')">
           <span class="chk ${o.completed ? 'done' : ''}" onclick="event.stopPropagation(); toggleComplete('${o.id}')">${o.completed ? checkSvg() : ''}</span>
-          <span class="row-title ${o.completed ? 'done' : ''}">${escapeHtml(item.title)}</span>
+          <span class="${titleClasses.join(' ')}">${escapeHtml(item.title)}</span>
           <span class="row-round">${o.round}/${totalRounds(o.itemId)}</span>
         </div>
       `;
