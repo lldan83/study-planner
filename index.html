@@ -73,6 +73,9 @@
   .row-title { flex: 1; font-size: 14.5px; color: #111; }
   .row-title.first { font-weight: 700; }
   .last-tag { display: inline-block; font-size: 10px; font-weight: 400; color: #888; background: #f0f0f0; border-radius: 5px; padding: 2px 6px; margin-left: 6px; vertical-align: middle; }
+  .tie-btns { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; margin-right: 4px; }
+  .tie-btn { font-size: 9px; line-height: 1; color: #999; cursor: pointer; padding: 2px; }
+  .tie-btn-disabled { visibility: hidden; }
   .row-title.done { color: #bbb; text-decoration: line-through; }
   .row-round { font-size: 11.5px; color: #aaa; flex-shrink: 0; }
 
@@ -298,6 +301,7 @@ async function loadAll() {
     state.presets = presets;
     state.items = items;
     state.occurrences = occurrences;
+    backfillOccurrenceOrder();
     state.loading = false;
   } catch (e) {
     state.loading = false;
@@ -307,6 +311,28 @@ async function loadAll() {
 }
 
 /* ---------- Helpers ---------- */
+/* One-time-per-record migration: any occurrence created before the `order` field existed
+   gets a value assigned from its current display position (date -> round -> item startDate,
+   the same tie-break used before this feature), without touching records that already have
+   an order (so a previous manual ▲▼ reorder is never overwritten). Runs in the background;
+   if the write fails it's simply retried on the next load. */
+function backfillOccurrenceOrder() {
+  const missing = state.occurrences.filter(o => typeof o.order !== "number");
+  if (missing.length === 0) return;
+  const already = state.occurrences.filter(o => typeof o.order === "number");
+  let nextOrder = already.length ? Math.max(...already.map(o => o.order)) + 1 : 1;
+  const sortedMissing = [...missing].sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    if (a.round !== b.round) return a.round - b.round;
+    const ia = getItem(a.itemId), ib = getItem(b.itemId);
+    return (ia?.startDate || "").localeCompare(ib?.startDate || "");
+  });
+  const updates = sortedMissing.map(o => {
+    o.order = nextOrder++;
+    return { collection: "occurrences", id: o.id, data: { order: o.order } };
+  });
+  fsCommitUpdates(updates).catch(e => console.error("order backfill failed", e));
+}
 function getCategory(id) { return state.categories.find(c => c.id === id); }
 function getItem(id) { return state.items.find(i => i.id === id); }
 function occurrencesForDate(dateStr) {
@@ -323,6 +349,29 @@ function totalRounds(itemId) {
    to the right occurrence after a later round has been deleted. */
 function isLastRound(o) {
   return !state.occurrences.some(x => x.itemId === o.itemId && x.round > o.round);
+}
+
+/* Sorted occurrences for one date + category: incomplete first, then by round, then by the
+   owning item's startDate, then by `order` as the final tie-break (lets ▲▼ control the exact
+   order when round and startDate are also equal). */
+function tiedListFor(dateStr, catId) {
+  const occs = occurrencesForDate(dateStr).filter(o => (getItem(o.itemId)?.categoryId || "__none__") === catId);
+  return occs.sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed - b.completed;
+    if (a.round !== b.round) return a.round - b.round;
+    const ia = getItem(a.itemId), ib = getItem(b.itemId);
+    const startCmp = (ia?.startDate || "").localeCompare(ib?.startDate || "");
+    if (startCmp !== 0) return startCmp;
+    return (a.order ?? 0) - (b.order ?? 0);
+  });
+}
+/* True if two occurrences are an actual "tie" (would sort equal without the `order` field) —
+   used both to decide whether to show ▲▼ and, defensively, before swapping. */
+function isTiedPair(a, b) {
+  if (!a || !b) return false;
+  if (a.completed !== b.completed || a.round !== b.round) return false;
+  const ia = getItem(a.itemId), ib = getItem(b.itemId);
+  return (ia?.startDate || "") === (ib?.startDate || "");
 }
 
 /* Returns a Set of occurrence ids that need attention: same item, same date, 2+ occurrences.
@@ -498,6 +547,23 @@ function toggleSelectAllDuplicates() {
   renderApp();
 }
 
+async function moveOcc(occId, dir) {
+  const list = tiedListFor(state.selectedDate, getItem(state.occurrences.find(x => x.id === occId)?.itemId)?.categoryId || "__none__");
+  const idx = list.findIndex(x => x.id === occId);
+  const neighbor = list[idx + dir];
+  if (!isTiedPair(list[idx], neighbor)) return;
+  const a = list[idx], b = neighbor;
+  const aOrder = a.order ?? 0, bOrder = b.order ?? 0;
+  a.order = bOrder; b.order = aOrder;
+  renderApp();
+  try {
+    await fsCommitUpdates([
+      { collection: "occurrences", id: a.id, data: { order: a.order } },
+      { collection: "occurrences", id: b.id, data: { order: b.order } }
+    ]);
+  } catch (e) { alert("순서 변경에 실패했어요."); }
+}
+
 function renderList() {
   const occs = occurrencesForDate(state.selectedDate);
   if (occs.length === 0) {
@@ -521,12 +587,7 @@ function renderList() {
     const cat = getCategory(catId);
     html += `<div class="cat-group">`;
     html += `<div class="cat-title" ${cat ? `onclick="openCategoryTimeline('${cat.id}')"` : ''}><span class="cat-dot" style="background:${cat ? cat.color : '#ccc'}"></span>${cat ? escapeHtml(cat.name) : '(삭제된 카테고리)'}</div>`;
-    byCat[catId].sort((a,b)=> {
-      if (a.completed !== b.completed) return a.completed - b.completed;
-      if (a.round !== b.round) return a.round - b.round;
-      const ia = getItem(a.itemId), ib = getItem(b.itemId);
-      return (ia?.startDate || "").localeCompare(ib?.startDate || "");
-    }).forEach(o => {
+    tiedListFor(state.selectedDate, catId).forEach((o, idx, arr) => {
       const item = getItem(o.itemId);
       const total = totalRounds(o.itemId);
       const selected = state.selectedIds.has(o.id);
@@ -540,6 +601,14 @@ function renderList() {
       const titleClasses = ["row-title"];
       if (o.completed) titleClasses.push("done");
       if (isFirst) titleClasses.push("first");
+      const canMoveUp = isTiedPair(o, arr[idx - 1]);
+      const canMoveDown = isTiedPair(o, arr[idx + 1]);
+      const tieBtns = (!state.selectMode && (canMoveUp || canMoveDown))
+        ? `<span class="tie-btns">
+             <span class="tie-btn ${canMoveUp ? '' : 'tie-btn-disabled'}" ${canMoveUp ? `onclick="event.stopPropagation(); moveOcc('${o.id}', -1)"` : ''}>▲</span>
+             <span class="tie-btn ${canMoveDown ? '' : 'tie-btn-disabled'}" ${canMoveDown ? `onclick="event.stopPropagation(); moveOcc('${o.id}', 1)"` : ''}>▼</span>
+           </span>`
+        : '';
       html += `
         <div class="${rowClasses.join(' ')}" onclick="${state.selectMode ? `toggleSelect('${o.id}')` : `openDetail('${item.id}')`}">
           ${state.selectMode
@@ -547,6 +616,7 @@ function renderList() {
             : `<span class="chk ${o.completed ? 'done' : ''}" onclick="event.stopPropagation(); toggleComplete('${o.id}')">${o.completed ? checkSvg() : ''}</span>`
           }
           <span class="${titleClasses.join(' ')}">${escapeHtml(item.title)}${isLast ? '<span class="last-tag">마지막</span>' : ''}</span>
+          ${tieBtns}
           <span class="row-round">${o.round}/${total}</span>
         </div>
       `;
@@ -819,8 +889,9 @@ async function saveAddItem() {
     }
     const item = await fsAdd("items", { title, categoryId, startDate, offsets, createdAt: todayStr() });
     state.items.push(item);
+    let nextOrder = (state.occurrences.length ? Math.max(...state.occurrences.map(o => o.order ?? 0)) : 0) + 1;
     for (let i = 0; i < offsets.length; i++) {
-      const occ = await fsAdd("occurrences", { itemId: item.id, round: i+1, date: addDays(startDate, offsets[i]), completed: false });
+      const occ = await fsAdd("occurrences", { itemId: item.id, round: i+1, date: addDays(startDate, offsets[i]), completed: false, order: nextOrder++ });
       state.occurrences.push(occ);
     }
     state.loading = false;
@@ -978,7 +1049,7 @@ function openDetail(itemId) {
   ui.detailReturnTo = ui.timelineCategoryId ? { type: "timeline", categoryId: ui.timelineCategoryId } : null;
   ui.timelineCategoryId = null;
   ui.detailItemId = itemId;
-  ui.detailDraft = { title: item.title, categoryId: item.categoryId, dates: {}, selected: new Set(), deletePending: new Set() };
+  ui.detailDraft = { title: item.title, categoryId: item.categoryId, dates: {}, selected: new Set(), deletePending: new Set(), addPending: [] };
   renderDetailModal();
 }
 function renderDetailModal() {
@@ -1007,6 +1078,24 @@ function renderDetailModal() {
     </div>
   `;
   }).join("");
+  let previewNextRound = (visibleOccs.length ? Math.max(...visibleOccs.map(o => o.round)) : 0) + 1;
+  const addRows = draft.addPending.map(p => {
+    const roundLabel = previewNextRound++;
+    return `
+    <div class="hist-row" style="background:#fafafa;">
+      <span style="width:18px;flex-shrink:0;"></span>
+      <span class="hist-round">${roundLabel}회차</span>
+      <span class="hist-date">
+        <input type="date" value="${p.date}" onchange="onAddDraftDateChange('${p.tempId}', this.value)">
+        <div class="hist-planned">${p.date ? '이 날짜가 계획으로 저장돼요' : '날짜를 선택해줘'}</div>
+      </span>
+      <span class="x-btn" onclick="removeAddPending('${p.tempId}')">×</span>
+    </div>
+  `;
+  }).join("");
+  const lastVisible = visibleOccs[visibleOccs.length - 1];
+  const canAddRound = draft.addPending.length === 0 && lastVisible && lastVisible.completed;
+  const addRoundBtn = canAddRound ? `<button class="btn-secondary" onclick="stageAddRound()">+ 회차 추가</button>` : "";
   const catOptions = state.categories.map(c => `<option value="${c.id}" ${c.id===draft.categoryId?'selected':''}>${escapeHtml(c.name)}</option>`).join("");
   const deleteSelBtn = draft.selected.size > 0
     ? `<button class="btn-secondary" style="color:#c0392b;border-color:#eecccc;" onclick="stageDeleteSelected()">선택한 ${draft.selected.size}개 회차 삭제 표시</button>`
@@ -1025,7 +1114,8 @@ function renderDetailModal() {
           <label>카테고리</label>
           <select id="detail-category" onchange="onDraftCategoryChange(this.value)">${catOptions}</select>
         </div>
-        <div id="hist-rows">${rows}</div>
+        <div id="hist-rows">${rows}${addRows}</div>
+        ${addRoundBtn}
         ${deleteSelBtn}
         ${pendingNote}
         <button class="btn-primary" style="margin-top:16px;" onclick="saveDetail('${item.id}')">저장</button>
@@ -1052,24 +1142,59 @@ function undoPendingDelete() {
   ui.detailDraft.deletePending.clear();
   renderDetailModal();
 }
+function stageAddRound() {
+  const tempId = "new_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7);
+  ui.detailDraft.addPending.push({ tempId, date: "" });
+  renderDetailModal();
+}
+function onAddDraftDateChange(tempId, v) {
+  const p = ui.detailDraft.addPending.find(x => x.tempId === tempId);
+  if (p) p.date = v;
+  renderDetailModal();
+}
+function removeAddPending(tempId) {
+  ui.detailDraft.addPending = ui.detailDraft.addPending.filter(x => x.tempId !== tempId);
+  renderDetailModal();
+}
 async function saveDetail(itemId) {
   const item = getItem(itemId);
   const draft = ui.detailDraft;
   if (!draft.title) { alert("제목을 입력해줘."); return; }
+  if (draft.addPending.some(p => !p.date)) { alert("추가한 회차의 날짜를 선택해줘."); return; }
   if (draft.deletePending.size > 0 && !confirm(`${draft.deletePending.size}개 회차를 삭제하고 저장할까요?`)) return;
   const dateWrites = Object.entries(draft.dates)
     .filter(([id]) => !draft.deletePending.has(id))
     .map(([id, date]) => ({ collection: "occurrences", id, data: { date } }));
   const deleteIds = Array.from(draft.deletePending);
+
+  // Work out round numbers for any newly-added rounds based on what will remain after deletions,
+  // and extend item.offsets so "원래 계획" keeps working for them going forward.
+  const remainingRounds = state.occurrences
+    .filter(o => o.itemId === itemId && !draft.deletePending.has(o.id))
+    .map(o => o.round);
+  let nextRound = (remainingRounds.length ? Math.max(...remainingRounds) : 0) + 1;
+  let nextOrder = (state.occurrences.length ? Math.max(...state.occurrences.map(o => o.order ?? 0)) : 0) + 1;
+  const newOffsets = [...item.offsets];
+  const toCreate = draft.addPending.map(p => {
+    const round = nextRound++;
+    const order = nextOrder++;
+    newOffsets[round - 1] = daysDiff(item.startDate, p.date);
+    return { round, date: p.date, order };
+  });
+
   closeModal();
   state.loading = true; renderApp();
   try {
-    await fsUpdate("items", itemId, { title: draft.title, categoryId: draft.categoryId });
-    item.title = draft.title; item.categoryId = draft.categoryId;
+    await fsUpdate("items", itemId, { title: draft.title, categoryId: draft.categoryId, offsets: newOffsets });
+    item.title = draft.title; item.categoryId = draft.categoryId; item.offsets = newOffsets;
     await fsCommitUpdates(dateWrites);
     dateWrites.forEach(w => { const o = state.occurrences.find(x=>x.id===w.id); if (o) o.date = w.data.date; });
     await fsCommitDeletes(deleteIds.map(id => ({ collection: "occurrences", id })));
     state.occurrences = state.occurrences.filter(o => !deleteIds.includes(o.id));
+    for (const c of toCreate) {
+      const occ = await fsAdd("occurrences", { itemId, round: c.round, date: c.date, completed: false, order: c.order });
+      state.occurrences.push(occ);
+    }
     state.loading = false;
     renderApp();
     if (ui.timelineCategoryId) renderCategoryTimelineModal();
