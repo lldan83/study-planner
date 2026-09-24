@@ -302,6 +302,7 @@ async function loadAll() {
     state.items = items;
     state.occurrences = occurrences;
     backfillOccurrenceOrder();
+    backfillItemOrder();
     state.loading = false;
   } catch (e) {
     state.loading = false;
@@ -333,6 +334,34 @@ function backfillOccurrenceOrder() {
   });
   fsCommitUpdates(updates).catch(e => console.error("order backfill failed", e));
 }
+/* One-time-per-record migration: any item created before item-level `order` existed gets a
+   value assigned now, without touching items that already have one (so a previous manual
+   ▲▼ reorder is never overwritten). Tie-break priority between items now lives here instead
+   of on individual occurrences, so an ▲▼ swap applies no matter which date the two items
+   next happen to collide on. To preserve whatever relative order was already visible on
+   screen, items are sorted by their earliest surviving occurrence's (now-legacy) `order`
+   field first, falling back to createdAt/startDate for items with no occurrences left.
+   Runs in the background; if the write fails it's simply retried on the next load. */
+function backfillItemOrder() {
+  const missing = state.items.filter(i => typeof i.order !== "number");
+  if (missing.length === 0) return;
+  const already = state.items.filter(i => typeof i.order === "number");
+  let nextOrder = already.length ? Math.max(...already.map(i => i.order)) + 1 : 1;
+  const earliestOccOrder = itemId => {
+    const occs = state.occurrences.filter(o => o.itemId === itemId && typeof o.order === "number");
+    return occs.length ? Math.min(...occs.map(o => o.order)) : Infinity;
+  };
+  const sortedMissing = [...missing].sort((a, b) => {
+    const oa = earliestOccOrder(a.id), ob = earliestOccOrder(b.id);
+    if (oa !== ob) return oa - ob;
+    return (a.createdAt || a.startDate || "").localeCompare(b.createdAt || b.startDate || "");
+  });
+  const updates = sortedMissing.map(i => {
+    i.order = nextOrder++;
+    return { collection: "items", id: i.id, data: { order: i.order } };
+  });
+  fsCommitUpdates(updates).catch(e => console.error("item order backfill failed", e));
+}
 function getCategory(id) { return state.categories.find(c => c.id === id); }
 function getItem(id) { return state.items.find(i => i.id === id); }
 function occurrencesForDate(dateStr) {
@@ -362,7 +391,7 @@ function tiedListFor(dateStr, catId) {
     const ia = getItem(a.itemId), ib = getItem(b.itemId);
     const startCmp = (ia?.startDate || "").localeCompare(ib?.startDate || "");
     if (startCmp !== 0) return startCmp;
-    return (a.order ?? 0) - (b.order ?? 0);
+    return (ia?.order ?? 0) - (ib?.order ?? 0);
   });
 }
 /* True if two occurrences are an actual "tie" (would sort equal without the `order` field) —
@@ -552,14 +581,14 @@ async function moveOcc(occId, dir) {
   const idx = list.findIndex(x => x.id === occId);
   const neighbor = list[idx + dir];
   if (!isTiedPair(list[idx], neighbor)) return;
-  const a = list[idx], b = neighbor;
-  const aOrder = a.order ?? 0, bOrder = b.order ?? 0;
-  a.order = bOrder; b.order = aOrder;
+  const itemA = getItem(list[idx].itemId), itemB = getItem(neighbor.itemId);
+  const aOrder = itemA.order ?? 0, bOrder = itemB.order ?? 0;
+  itemA.order = bOrder; itemB.order = aOrder;
   renderApp();
   try {
     await fsCommitUpdates([
-      { collection: "occurrences", id: a.id, data: { order: a.order } },
-      { collection: "occurrences", id: b.id, data: { order: b.order } }
+      { collection: "items", id: itemA.id, data: { order: itemA.order } },
+      { collection: "items", id: itemB.id, data: { order: itemB.order } }
     ]);
   } catch (e) { alert("순서 변경에 실패했어요."); }
 }
@@ -887,7 +916,8 @@ async function saveAddItem() {
       const preset = await fsAdd("presets", { name: newPresetName, offsets });
       state.presets.push(preset);
     }
-    const item = await fsAdd("items", { title, categoryId, startDate, offsets, createdAt: todayStr() });
+    const itemOrder = (state.items.length ? Math.max(...state.items.map(i => i.order ?? 0)) : 0) + 1;
+    const item = await fsAdd("items", { title, categoryId, startDate, offsets, createdAt: todayStr(), order: itemOrder });
     state.items.push(item);
     let nextOrder = (state.occurrences.length ? Math.max(...state.occurrences.map(o => o.order ?? 0)) : 0) + 1;
     for (let i = 0; i < offsets.length; i++) {
